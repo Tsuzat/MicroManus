@@ -27,7 +27,7 @@
 
 	<p>
 		If you have any questions, contact us at
-		<a href="mailto:contact@MicroManus.pro">contact@MicroManus.pro</a>.
+		<a href="mailto:contact@tsuzat.com">contact@tsuzat.com</a>.
 	</p>
 
 	<h2>1. Who We Are</h2>
@@ -159,7 +159,7 @@
 	</ul>
 	<p>
 		To exercise these rights, contact us at
-		<a href="mailto:contact@MicroManus.pro">contact@MicroManus.pro</a>.
+		<a href="mailto:contact@tsuzat.com">contact@tsuzat.com</a>.
 	</p>
 
 	<h2>10. Children’s Privacy</h2>
@@ -182,8 +182,8 @@
 	<ul>
 		<li class="flex list-none items-center gap-4">
 			<Email class="size-4" />
-			<a class="nodefault" href="mailto:contact@MicroManus.pro"
-				><strong>contact@MicroManus.pro</strong></a
+			<a class="nodefault" href="mailto:contact@tsuzat.com"
+				><strong>contact@tsuzat.com</strong></a
 			>
 		</li>
 		<li class="flex list-none items-center gap-4">
