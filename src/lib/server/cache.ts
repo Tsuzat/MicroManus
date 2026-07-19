@@ -54,7 +54,11 @@ export const cache = {
 	},
 
 	async setUserUnlock(userId: string, unlocked: boolean): Promise<void> {
-		await this.set(CacheKeys.userUnlock(userId), unlocked ? 'true' : 'false', CACHE_TTL.USER_UNLOCK);
+		await this.set(
+			CacheKeys.userUnlock(userId),
+			unlocked ? 'true' : 'false',
+			CACHE_TTL.USER_UNLOCK
+		);
 	},
 
 	async invalidateUserUnlock(userId: string): Promise<void> {

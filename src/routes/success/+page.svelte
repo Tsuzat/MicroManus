@@ -33,42 +33,55 @@
 
 <Particles class="fixed top-0 left-0 -z-10 h-screen w-screen bg-transparent!" />
 
-<main class="min-h-screen w-full flex flex-col items-center justify-center p-4 md:p-8">
-	<div class="w-full max-w-lg flex flex-col items-center gap-8 my-8">
+<main class="flex min-h-screen w-full flex-col items-center justify-center p-4 md:p-8">
+	<div class="my-8 flex w-full max-w-lg flex-col items-center gap-8">
 		<AppLogo class="z-50 mx-auto" />
 
-		<Card.Root class="relative overflow-hidden border bg-background/60 backdrop-blur-2xl transition-all duration-300 shadow-2xl w-full text-center p-6 md:p-8">
+		<Card.Root
+			class="relative w-full overflow-hidden border bg-background/60 p-6 text-center shadow-2xl backdrop-blur-2xl transition-all duration-300 md:p-8"
+		>
 			<!-- Glow Effects -->
-			<div class="absolute -top-16 -left-16 size-44 bg-primary/20 rounded-full blur-3xl pointer-events-none"></div>
-			<div class="absolute -bottom-16 -right-16 size-44 bg-green-500/20 rounded-full blur-3xl pointer-events-none"></div>
+			<div
+				class="pointer-events-none absolute -top-16 -left-16 size-44 rounded-full bg-primary/20 blur-3xl"
+			></div>
+			<div
+				class="pointer-events-none absolute -right-16 -bottom-16 size-44 rounded-full bg-green-500/20 blur-3xl"
+			></div>
 
 			<Card.Header class="items-center space-y-4 pb-4">
 				<div class="relative">
-					<div class="size-20 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center border border-emerald-500/30 shadow-lg animate-bounce">
+					<div
+						class="flex size-20 animate-bounce items-center justify-center rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-500 shadow-lg"
+					>
 						<CheckCircle2 class="size-10" />
 					</div>
 					<div class="absolute -top-1 -right-1">
-						<Sparkles class="size-6 text-amber-400 animate-pulse" />
+						<Sparkles class="size-6 animate-pulse text-amber-400" />
 					</div>
 				</div>
 
 				<div class="space-y-1">
-					<Card.Title class="text-2xl md:text-3xl font-extrabold tracking-tight">
+					<Card.Title class="text-2xl font-extrabold tracking-tight md:text-3xl">
 						Payment Confirmed!
 					</Card.Title>
 					<Card.Description class="text-base">
-						Thank you, <span class="font-medium text-foreground">{data.user.name || 'User'}</span>! Your account is now fully unlocked.
+						Thank you, <span class="font-medium text-foreground">{data.user.name || 'User'}</span>!
+						Your account is now fully unlocked.
 					</Card.Description>
 				</div>
 			</Card.Header>
 
 			<Card.Content class="space-y-6 py-4">
 				<!-- Credit Badge Banner -->
-				<div class="flex items-center justify-center gap-3 p-4 rounded-xl bg-primary/10 border border-primary/20 text-primary">
+				<div
+					class="flex items-center justify-center gap-3 rounded-xl border border-primary/20 bg-primary/10 p-4 text-primary"
+				>
 					<Coins class="size-6 shrink-0" />
 					<div class="text-left">
 						<div class="text-sm font-semibold">5 Credits Granted</div>
-						<div class="text-xs text-muted-foreground">Ready to use across all supported AI models</div>
+						<div class="text-xs text-muted-foreground">
+							Ready to use across all supported AI models
+						</div>
 					</div>
 				</div>
 

@@ -20,7 +20,10 @@ export const load: PageServerLoad = async ({ url, locals: { user } }) => {
 		try {
 			// Try to verify checkout session via Polar SDK if available
 			const checkoutState = await polarClient.checkouts.get({ id: checkoutId });
-			if (checkoutState && (checkoutState.status === 'succeeded' || checkoutState.status === 'confirmed')) {
+			if (
+				checkoutState &&
+				(checkoutState.status === 'succeeded' || checkoutState.status === 'confirmed')
+			) {
 				await unlockUser(user.id, 'payment');
 			} else {
 				// Even if status check has minor variation, trigger unlock as safety net

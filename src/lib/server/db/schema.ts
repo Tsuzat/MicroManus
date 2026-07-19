@@ -68,8 +68,8 @@ export const apiKeys = pgTable('api_keys', {
 	createdAt: timestamp('created_at').defaultNow().notNull()
 });
 
-// 4. threads (id, user_id FK, title, is_archived, created_at, updated_at)
-export const threads = pgTable('threads', {
+// 4. chats (id, user_id FK, title, is_archived, created_at, updated_at)
+export const chats = pgTable('chats', {
 	id: text('id')
 		.primaryKey()
 		.$defaultFn(() => crypto.randomUUID()),
@@ -85,14 +85,14 @@ export const threads = pgTable('threads', {
 		.notNull()
 });
 
-// 5. messages (id, thread_id FK, role, content text, tool_calls jsonb, created_at)
+// 5. messages (id, chat_id FK, role, content text, tool_calls jsonb, created_at)
 export const messages = pgTable('messages', {
 	id: text('id')
 		.primaryKey()
 		.$defaultFn(() => crypto.randomUUID()),
-	threadId: text('thread_id')
+	chatId: text('chat_id')
 		.notNull()
-		.references(() => threads.id, { onDelete: 'cascade' }),
+		.references(() => chats.id, { onDelete: 'cascade' }),
 	role: text('role').$type<'user' | 'assistant' | 'system' | 'tool'>().notNull(),
 	content: text('content').notNull(),
 	toolCalls: jsonb('tool_calls'),
@@ -127,8 +127,8 @@ export type NewCreditsLedger = typeof creditsLedger.$inferInsert;
 export type ApiKey = typeof apiKeys.$inferSelect;
 export type NewApiKey = typeof apiKeys.$inferInsert;
 
-export type Thread = typeof threads.$inferSelect;
-export type NewThread = typeof threads.$inferInsert;
+export type Chat = typeof chats.$inferSelect;
+export type NewChat = typeof chats.$inferInsert;
 
 export type Message = typeof messages.$inferSelect;
 export type NewMessage = typeof messages.$inferInsert;
