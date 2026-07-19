@@ -5,11 +5,11 @@
 	import * as Dropdown from '$lib/components/ui/dropdown-menu';
 	import { Button, buttonVariants } from '$lib/components/ui/button';
 	import ArrowRight from '@lucide/svelte/icons/arrow-right';
-	import Users from '@lucide/svelte/icons/users';
-	import Rocket from '@lucide/svelte/icons/rocket';
+	import Bot from '@lucide/svelte/icons/bot';
+	import KeyRound from '@lucide/svelte/icons/key-round';
+	import Zap from '@lucide/svelte/icons/zap';
 	import ShieldCheck from '@lucide/svelte/icons/shield-check';
 	import Menu from '@lucide/svelte/icons/menu';
-	import LayoutPanelTop from '@lucide/svelte/icons/layout-panel-top';
 	import { onMount } from 'svelte';
 	import Logout from '@lucide/svelte/icons/log-out';
 	import { goto } from '$app/navigation';
@@ -38,12 +38,8 @@
 			title: 'Features'
 		},
 		{
-			url: '#solutions',
-			title: 'Solution'
-		},
-		{
-			url: '#pricing',
-			title: 'Pricing'
+			url: '#how-it-works',
+			title: 'How It Works'
 		},
 		{
 			url: '#faqs',
@@ -53,27 +49,27 @@
 
 	const features = [
 		{
-			name: 'Intuitive Kanban Boards',
+			name: 'AI-Powered Chat Agents',
 			description:
-				'Visualize your work with clean, customizable Kanban boards designed for effortless task management.',
-			icon: LayoutPanelTop
+				'Interact with powerful AI models through an intuitive chat interface. Run multi-turn conversations with tool-calling capabilities.',
+			icon: Bot
 		},
 		{
-			name: 'Seamless Team Collaboration',
+			name: 'Bring Your Own Key',
 			description:
-				'Invite teammates, assign tasks, and track progress — all in real-time, with role-based access control.',
-			icon: Users
+				'Connect your own API keys from OpenAI, Anthropic, Google, and more. Full control over which models and endpoints you use.',
+			icon: KeyRound
 		},
 		{
-			name: 'Pro Tools for Power Users',
+			name: 'Transparent Usage Tracking',
 			description:
-				'Unlock recurring tasks, private boards, analytics, and more with KanFlow Pro — built for productivity.',
-			icon: Rocket
+				'Track every token with event-sourced billing. Monitor input, output, and cache tokens per conversation — down to the cent.',
+			icon: Zap
 		},
 		{
 			name: 'Secure by Design',
 			description:
-				'All your boards and data are encrypted and protected. You’re in control of your workflow and privacy.',
+				'Your API keys are encrypted at rest with AES-256-GCM. All data stays in your control with enterprise-grade security.',
 			icon: ShieldCheck
 		}
 	];
@@ -81,63 +77,63 @@
 	const faqItems = [
 		{
 			id: 'item-1',
-			question: 'Can I upgrade, downgrade, or cancel anytime?',
+			question: 'What is MicroManus?',
 			answer:
-				'Yes, you can change your plan at any time from your workspace settings. Upgrades take effect immediately, and billing changes are prorated automatically.'
+				'MicroManus is an AI agent platform that lets you interact with powerful language models through an intuitive chat interface. Bring your own API keys, track usage, and manage conversations — all in one place.'
 		},
 		{
 			id: 'item-2',
-			question: 'What is Realtime Collaboration?',
+			question: 'What does "Bring Your Own Key" mean?',
 			answer:
-				'Available on Pro and Teams, realtime collaboration allows multiple members to work on the same board simultaneously. You’ll see live task updates, and state changes instantly.'
+				'Instead of paying us for AI access, you connect your own API keys from providers like OpenAI, Anthropic, or Google. This gives you full control over pricing, rate limits, and model selection.'
 		},
 		{
 			id: 'item-3',
-			question: 'How does the Task Blocker Analysis work?',
+			question: 'Which AI providers are supported?',
 			answer:
-				'Our algorithm analyzes task movement patterns across your board. It automatically highlights items that have been stagnant, helping you quickly identify and resolve potential bottlenecks.'
+				'We support OpenAI, Anthropic, Google, OpenRouter, Groq, Together AI, DeepSeek, and any custom OpenAI-compatible endpoint. More providers are added regularly.'
 		},
 		{
 			id: 'item-4',
-			question: 'What is a Board Preview?',
+			question: 'How does the credit system work?',
 			answer:
-				'Board Previews allow you to share a read-only snapshot of your board. It is perfect for securely sharing project progress with external stakeholders or clients without granting them edit access.'
+				'Credits are tracked via an event-sourced ledger. You receive credits through sign-up bonuses or purchases, and each AI interaction deducts credits based on token usage. You can monitor your balance and history at any time.'
 		},
 		{
 			id: 'item-5',
-			question: 'Who can access my Board Preview?',
+			question: 'Are my API keys secure?',
 			answer:
-				'If your board is set to Public, anyone with the secure preview link can view it. If the board is Private, only explicitly invited workspace members can access the preview.'
+				'Absolutely. All API keys are encrypted at rest using AES-256-GCM encryption. Keys are never stored in plain text and are only decrypted momentarily when making API calls to your chosen provider.'
 		},
 		{
 			id: 'item-6',
-			question: 'Can I restrict members to specific boards?',
+			question: 'Can I use multiple API keys?',
 			answer:
-				'Yes. Once you invite users to your Workspace, you have full control over their access. Members can only see and interact with the specific boards they are added to.'
+				'Yes. You can add multiple API keys from different providers and switch between them. Each key can have a custom label, a default model, and can be toggled on or off without deleting it.'
 		},
 		{
 			id: 'item-7',
-			question: 'What permissions can I set for my team?',
+			question: 'What is token usage tracking?',
 			answer:
-				'Pro plans offer standard Read and Write permissions. The Teams plan unlocks an advanced Admin role, providing comprehensive governance, audit logs, and workspace-wide control.'
+				'Every AI interaction logs detailed token metrics — input tokens, output tokens, cache hits, and estimated cost in USD. This gives you complete visibility into your AI spending per conversation.'
 		},
 		{
 			id: 'item-8',
-			question: 'Do my collaborators need their own paid subscription?',
+			question: 'Is there a free tier?',
 			answer:
-				'No. Billing is tied to the Workspace, not the individual. You can invite members up to your plan’s limit, and they will enjoy the workspace’s premium features at no extra cost.'
+				'Yes! New users receive starter credits upon sign-up. You can also unlock full access via a coupon code or a one-time payment to get started immediately.'
 		},
 		{
 			id: 'item-9',
-			question: 'Is MicroManus suitable for personal use?',
+			question: 'Do I need to create an account?',
 			answer:
-				'Absolutely! Our Free tier is specifically designed for personal workflows, offering robust task management and unlimited items without requiring a subscription.'
+				'Yes, sign in with your GitHub or Google account to get started. We use secure OAuth — no passwords to remember.'
 		},
 		{
 			id: 'item-10',
-			question: 'What does Activity Tracking include?',
+			question: 'Can I export my conversations?',
 			answer:
-				'Activity Tracking provides a detailed, chronological audit log of all board actions—including task creation, status changes, assignments, and comments—ensuring your team stays aligned.'
+				'Your conversations are stored securely and can be accessed anytime. Export functionality is on our roadmap and will be available soon.'
 		}
 	];
 
@@ -191,26 +187,24 @@
 
 <svelte:window bind:scrollY={y} />
 <svelte:head>
-	<title>MicroManus | Collab and manage projects with ease</title>
+	<title>MicroManus | AI Agent Platform — Bring Your Own Key</title>
 	<meta
 		name="description"
-		content="Discover MicroManus—a dynamic, premium Kanban board that transforms the way you and your team visualize tasks, streamline workflows, and drive continuous improvement."
+		content="MicroManus is an AI agent platform where you bring your own API keys, chat with powerful language models, and track every token — all with transparent, event-sourced billing."
 	/>
-	<link rel="canonical" href="https://MicroManus.pro/" />
 
 	<!-- Open Graph overrides -->
-	<meta property="og:title" content="MicroManus — Collaborate and manage projects with ease" />
+	<meta property="og:title" content="MicroManus — Your AI agents, your keys, your rules" />
 	<meta
 		property="og:description"
-		content="A dynamic, premium Kanban board that transforms the way you and your team visualize tasks and streamline workflows."
+		content="An AI agent platform with BYOK support, multi-model chat, and transparent token usage tracking."
 	/>
-	<meta property="og:url" content="https://MicroManus.pro/" />
 
 	<!-- X/Twitter overrides -->
-	<meta name="twitter:title" content="MicroManus — Collaborate and manage projects with ease" />
+	<meta name="twitter:title" content="MicroManus — Your AI agents, your keys, your rules" />
 	<meta
 		name="twitter:description"
-		content="A dynamic, premium Kanban board that transforms the way you and your team visualize tasks and streamline workflows."
+		content="An AI agent platform with BYOK support, multi-model chat, and transparent token usage tracking."
 	/>
 
 	<!-- Structured Data (JSON-LD) -->
@@ -220,13 +214,13 @@
 			"@type": "SoftwareApplication",
 			"name": "MicroManus",
 			"operatingSystem": "All",
-			"applicationCategory": "BusinessApplication",
+			"applicationCategory": "DeveloperApplication",
 			"offers": {
 				"@type": "Offer",
 				"price": "0.00",
 				"priceCurrency": "USD"
 			},
-			"description": "Discover MicroManus—a dynamic Kanban board that transforms the way you and your team visualize tasks, streamline workflows, and drive continuous improvement."
+			"description": "MicroManus is an AI agent platform where you bring your own API keys, chat with powerful language models, and track every token with transparent billing."
 		}
 	</script>
 </svelte:head>
@@ -328,7 +322,7 @@
 			title="Open Pricing"
 		>
 			<span class="text-sm text-foreground"
-				>✨ Use code <span class="font-bold">EARLY10</span> for 10% off ✨</span
+				>✨ Now supporting <span class="font-bold">8+ AI providers</span> with BYOK ✨</span
 			>
 			<span class="block h-4 w-0.5 border-l bg-muted-foreground dark:border-background"></span>
 			<div
@@ -344,37 +338,21 @@
 				</div>
 			</div>
 		</a>
-		<h1 class="text-balance">Collab and manage projects with ease</h1>
+		<h1 class="text-balance">Your AI agents, your keys, your rules</h1>
 		<p class="text-balance text-muted-foreground">
-			Discover MicroManus—a dynamic Kanban board that transforms the way you and your team
-			visualizes tasks, streamlines workflows, and drives continuous improvement.
+			MicroManus is an open AI agent platform. Bring your own API keys, chat with the best models,
+			and track every token — with full transparency and zero lock-in.
 		</p>
 		<div class="flex items-center justify-center gap-4">
-			<Button class="nodefault">Get Started</Button>
-			<Button class="nodefault" variant="outline" href="#pricing">See Pricing</Button>
+			<Button class="nodefault" href={resolve('/signin')}>Get Started</Button>
+			<Button class="nodefault" variant="outline" href="#features">See Features</Button>
 		</div>
-
-		<!-- <div
-			class="relative h-full w-full rounded-xl shadow-lg inset-shadow-2xs shadow-zinc-950/15 dark:inset-shadow-white/20"
-		>
-			<BorderBeam size={150} borderWidth={2} duration={15} />
-			<img
-				src={full_app_light}
-				alt="KanFlow Light"
-				class="block h-full w-full rounded-xl border object-cover dark:hidden"
-			/>
-			<img
-				src={full_app_dark}
-				alt="KanFlow Dark"
-				class="hidden h-full w-full rounded-xl border object-cover dark:block"
-			/>
-		</div> -->
 	</section>
 	<section id="features">
 		<div class="flex flex-col items-center gap-4">
-			<h1 class="text-4xl font-bold">Features That'll help your workflow</h1>
+			<h1 class="text-4xl font-bold">Built for the AI-First Developer</h1>
 			<span class="text-lg text-muted-foreground"
-				>Everything you need to create an amazing kanban workflow
+				>Everything you need to interact with AI models on your terms
 			</span>
 		</div>
 		<dl class="my-20 grid grid-cols-2 gap-10">
@@ -396,9 +374,9 @@
 			{/each}
 		</dl>
 		<div class="flex flex-col items-center gap-4">
-			<h1 class="text-4xl font-bold">Multi-Stream Workflows and Projects</h1>
+			<h1 class="text-4xl font-bold">Multi-Model, Multi-Provider</h1>
 			<span class="text-lg text-balance text-muted-foreground"
-				>Manage Project across streams with ease and collabate with full control
+				>Switch between AI providers and models seamlessly within a single platform
 			</span>
 		</div>
 		<div class="relative mx-auto mt-4 w-2xl max-w-full rounded-2xl">
@@ -406,45 +384,6 @@
 			<Multistream class="mx-auto rounded-2xl" />
 		</div>
 	</section>
-
-	<!-- <section id="solutions">
-		<div class="flex flex-col items-center gap-4">
-			<h1 class="text-4xl font-bold">Solutions for your workflow</h1>
-			<span class="text-lg text-balance text-muted-foreground">
-				KanFlow is a versatile tool that can be used for a variety of workflows. Whether you're a
-				<span class="highlight">Freelancer</span>, or a
-				<span class="highlight">Business</span>
-			</span>
-		</div>
-		<div class="my-8">
-			<h3>Minimal yet feature rich by design</h3>
-			<div class="my-8 grid gap-6 sm:grid-cols-2 md:gap-12 lg:gap-24">
-				<div class="relative mb-6 flex w-96 items-center justify-center sm:mb-0">
-					<SampleTask />
-				</div>
-				<div class="space-y-8">
-					KanFlow Cards are the core of your workflow — built to capture tasks, context, and
-					collaboration in one place.
-				</div>
-			</div>
-		</div>
-		<div class="my-8">
-			<h3>Keep your workflow organized with Tags</h3>
-			<div class="my-8 grid gap-6 sm:grid-cols-2 md:gap-12 lg:gap-24">
-				<div class="relative mb-6 flex w-96 items-center justify-center sm:mb-0">
-					<TiltCard class="rounded-xl" scale={1.0125} tiltLimit={2}>
-						<SampleBoardTags />
-					</TiltCard>
-				</div>
-				<div class="relative space-y-4">
-					<p>
-						Board Tags are a great way to keep your workflow organized. They are a great way to
-						categorize your boards and make them easier to find.
-					</p>
-				</div>
-			</div>
-		</div>
-	</section> -->
 
 	<section id="faqs" class="my-4">
 		<div class="mx-auto px-4 md:px-6">
@@ -479,7 +418,7 @@
 				<p class="mt-6 px-4 text-muted-foreground">
 					Can't find what you're looking for?
 					<a
-						href="mailto:contact@kanflow.pro"
+						href="mailto:contact@tsuzat.com"
 						title="Contact Us"
 						class="font-medium text-primary hover:underline"
 					>
@@ -490,13 +429,13 @@
 		</div>
 	</section>
 	<footer class="flex items-center justify-center gap-2 border-t py-4 text-sm">
-		© 2026 KanFlow. All rights reserved •
+		© 2026 MicroManus. All rights reserved •
 		<a href={resolve('/terms')} title="Open Terms of Use" class="text-primary">Terms of Use</a>
 		•
 		<a href={resolve('/privacy')} title="Open Privacy Policy" class="text-primary">Privacy Policy</a
 		>
 		•
-		<a href="mailto:contact@kanflow.pro" title="Contact Us" class="text-primary">Contact Us</a>
+		<a href="mailto:contact@tsuzat.com" title="Contact Us" class="text-primary">Contact Us</a>
 	</footer>
 </main>
 
