@@ -1,0 +1,16 @@
+node_modules
+.svelte-kit
+.git
+.DS_Store
+.env
+.env.*
+!.env.example
+test-results
+*.md
+.vscode
+.gemini
+.prettierignore
+prettier.config.js
+eslint.config.js
+playwright.config.ts
+drizzle
