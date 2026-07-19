@@ -16,5 +16,7 @@
 
 <Sidebar.Provider>
 	<AppSidebar user={data.user} />
-	{@render children()}
+	<Sidebar.Inset>
+		{@render children()}
+	</Sidebar.Inset>
 </Sidebar.Provider>
