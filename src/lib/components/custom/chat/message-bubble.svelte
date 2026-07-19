@@ -28,6 +28,7 @@
 		sources?: Array<{ title: string; url: string; snippet: string }>;
 		reasoning?: string;
 		toolInvocations?: any[];
+		isStreaming?: boolean;
 	}
 
 	let {
@@ -39,7 +40,8 @@
 		onRewrite,
 		sources = [],
 		reasoning,
-		toolInvocations = []
+		toolInvocations = [],
+		isStreaming = false
 	}: Props = $props();
 
 	let copied = $state(false);
@@ -176,14 +178,15 @@
 				<Streamdown class="render-markdown" {content} components={{ code: Code, math: Math }} />
 			</div>
 
-			{#if allSources && allSources.length > 0}
-				<SourceCitations sources={allSources} />
-			{/if}
+			{#if !isStreaming}
+				{#if allSources && allSources.length > 0}
+					<SourceCitations sources={allSources} />
+				{/if}
 
-			<!-- Actions & Web Sources Toolbar -->
-			<div class="flex flex-wrap items-center gap-2 pt-1">
-				<!-- Action Buttons (Copy, Download, Regenerate) -->
-				<div class="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+				<!-- Actions & Web Sources Toolbar -->
+				<div class="flex flex-wrap items-center gap-2 pt-1">
+					<!-- Action Buttons (Copy, Download, Regenerate) -->
+					<div class="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
 					<!-- Copy Button -->
 					<Button
 						variant="ghost"
@@ -238,6 +241,7 @@
 					{/if}
 				</div>
 			</div>
+			{/if}
 		{/if}
 
 		<!-- Render Attachments -->

@@ -43,27 +43,6 @@
 			} else {
 				toast.error(error.message || 'An error occurred while streaming.');
 			}
-		},
-		onFinish: (message) => {
-			console.log('🏁 [AI SDK] ON FINISH (Final Server Message):', message);
-			toast.info(`Received final message with ${message.parts?.length || 0} parts.`);
-
-			const hasReasoning =
-				message.message.parts?.some((p) => p.type === 'reasoning') || message.reasoning;
-			const hasTools =
-				message.message.parts?.some((p) => p.type === 'tool-invocation') ||
-				message.message.toolInvocations;
-			console.log(`[AI SDK] Has Reasoning: ${!!hasReasoning} | Has Tools: ${!!hasTools}`);
-			console.log('[AI SDK] Annotations:', message.message.annotations);
-			console.log('[AI SDK] Tool Invocations:', message.message.toolInvocations);
-		}
-	});
-
-	// Log live streaming updates to the console
-	$effect(() => {
-		const lastMessage = chat.messages[chat.messages.length - 1];
-		if (lastMessage && lastMessage.role === 'assistant') {
-			console.log('📡 [AI SDK] LIVE STREAMING MESSAGE SNAPSHOT:', $state.snapshot(lastMessage));
 		}
 	});
 
@@ -307,6 +286,8 @@
 							{sources}
 							modelId={message.role === 'assistant' ? selectedModelId : undefined}
 							messageId={message.id}
+							isStreaming={chat.status === 'streaming' &&
+								message.id === chat.messages[chat.messages.length - 1].id}
 							onRewrite={(id) => chat.regenerate({ messageId: id })}
 						/>
 					{/each}
@@ -330,11 +311,19 @@
 	</div>
 
 	<!-- Input -->
+
 	<ChatInput
 		{selectedModelId}
 		onModelSelect={handleModelSelect}
 		onSubmit={handleSubmit}
 		isStreaming={chat.status === 'streaming' || chat.status === 'submitted'}
 		onStop={handleStop}
+		userHistory={chat.messages
+			.filter((m) => m.role === 'user')
+			.map((m) => {
+				const textParts = m.parts?.filter((p) => p.type === 'text') ?? [];
+				return textParts.length > 0 ? textParts.map((p: any) => p.text).join('\n') : m.content;
+			})
+			.filter(Boolean)}
 	/>
 </div>

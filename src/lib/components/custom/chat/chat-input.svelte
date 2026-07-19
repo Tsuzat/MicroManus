@@ -22,6 +22,7 @@
 		onStop?: () => void;
 		placeholder?: string;
 		autofocus?: boolean;
+		userHistory?: string[];
 	}
 
 	let {
@@ -31,7 +32,8 @@
 		isStreaming = false,
 		onStop,
 		placeholder = 'Ask anything...',
-		autofocus = false
+		autofocus = false,
+		userHistory = []
 	}: Props = $props();
 
 	let inputText = $state('');
@@ -39,6 +41,9 @@
 	let fileInputEl = $state<HTMLInputElement | null>(null);
 	let attachedFiles = $state<AttachedFile[]>([]);
 	let isDragging = $state(false);
+
+	let historyIndex = $state(-1);
+	let historyDraft = $state('');
 
 	const canSubmit = $derived(
 		(inputText.trim().length > 0 || attachedFiles.length > 0) && !isStreaming
@@ -55,6 +60,8 @@
 
 		inputText = '';
 		attachedFiles = [];
+		historyIndex = -1;
+		historyDraft = '';
 		// Reset textarea height
 		if (textareaEl) {
 			textareaEl.style.height = 'auto';
@@ -69,6 +76,46 @@
 				onStop();
 			} else {
 				handleSubmit();
+			}
+			return;
+		}
+
+		if (userHistory.length > 0) {
+			if (e.key === 'ArrowUp') {
+				const isAtTop = textareaEl?.selectionStart === 0;
+				if (isAtTop || historyIndex !== -1) {
+					e.preventDefault();
+					if (historyIndex === -1) {
+						historyDraft = inputText;
+					}
+					if (historyIndex < userHistory.length - 1) {
+						historyIndex++;
+						inputText = userHistory[userHistory.length - 1 - historyIndex];
+						// Resize after value change
+						requestAnimationFrame(() => {
+							if (textareaEl) {
+								textareaEl.style.height = 'auto';
+								textareaEl.style.height = `${Math.min(textareaEl.scrollHeight, 200)}px`;
+							}
+						});
+					}
+				}
+			} else if (e.key === 'ArrowDown') {
+				if (historyIndex !== -1) {
+					e.preventDefault();
+					historyIndex--;
+					if (historyIndex === -1) {
+						inputText = historyDraft;
+					} else {
+						inputText = userHistory[userHistory.length - 1 - historyIndex];
+					}
+					requestAnimationFrame(() => {
+						if (textareaEl) {
+							textareaEl.style.height = 'auto';
+							textareaEl.style.height = `${Math.min(textareaEl.scrollHeight, 200)}px`;
+						}
+					});
+				}
 			}
 		}
 	}
