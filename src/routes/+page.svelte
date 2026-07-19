@@ -78,43 +78,43 @@
 			id: 'item-1',
 			question: 'What is MicroManus?',
 			answer:
-				'MicroManus is an AI agent platform that lets you interact with powerful language models through an intuitive chat interface. Bring your own API keys, track usage, and manage conversations — all in one place.'
+				'MicroManus is an advanced AI chat platform built on the "Bring Your Own Key" (BYOK) philosophy. It allows you to interact with the most powerful language models in the world without paying marked-up subscription fees.'
 		},
 		{
 			id: 'item-2',
-			question: 'What does "Bring Your Own Key" mean?',
+			question: 'What does "Bring Your Own Key" (BYOK) mean?',
 			answer:
-				'Instead of paying us for AI access, you connect your own API keys from providers like OpenAI, Anthropic, or Google. This gives you full control over pricing, rate limits, and model selection.'
+				'Instead of paying us a monthly fee for AI access, you connect your own API keys directly from providers like OpenAI, Anthropic, or Google. This means you pay the wholesale API cost directly to the provider for exactly what you use, saving you money while giving you full control over rate limits and model selection.'
 		},
 		{
 			id: 'item-3',
 			question: 'Which AI providers are supported?',
 			answer:
-				'We support OpenAI, Anthropic, Google, OpenRouter, Groq, Together AI, DeepSeek, and any custom OpenAI-compatible endpoint. More providers are added regularly.'
+				'We support OpenAI, Anthropic, Google, OpenRouter, Groq, Together AI, DeepSeek, and any custom OpenAI-compatible endpoint. You can seamlessly switch between models from different providers in the middle of a conversation.'
 		},
 		{
 			id: 'item-4',
-			question: 'How does the credit system work?',
+			question: 'Are there any usage limits or credit systems?',
 			answer:
-				'Credits are tracked via an event-sourced ledger. You receive credits through sign-up bonuses or purchases, and each AI interaction deducts credits based on token usage. You can monitor your balance and history at any time.'
+				'No! Because you bring your own keys, there are no artificial credits, usage caps, or message limits imposed by MicroManus. Your only limits are the ones set on your API provider accounts.'
 		},
 		{
 			id: 'item-5',
 			question: 'Are my API keys secure?',
 			answer:
-				'Absolutely. All API keys are encrypted at rest using AES-256-GCM encryption. Keys are never stored in plain text and are only decrypted momentarily when making API calls to your chosen provider.'
+				'Absolutely. All API keys are encrypted at rest using AES-256-GCM encryption. Keys are never stored in plain text and are only decrypted momentarily on the server when making API calls to your chosen provider.'
 		},
 		{
 			id: 'item-6',
 			question: 'Can I use multiple API keys?',
 			answer:
-				'Yes. You can add multiple API keys from different providers and switch between them. Each key can have a custom label, a default model, and can be toggled on or off without deleting it.'
+				'Yes. You can add multiple API keys from different providers and manage them centrally. Each key can have a custom label and can be toggled on or off instantly.'
 		},
 		{
 			id: 'item-7',
-			question: 'What is token usage tracking?',
+			question: 'Can I track how much I am spending?',
 			answer:
-				'Every AI interaction logs detailed token metrics — input tokens, output tokens, cache hits, and estimated cost in USD. This gives you complete visibility into your AI spending per conversation.'
+				'Yes! MicroManus logs detailed token metrics for every single interaction. You can view granular cost breakdowns including input tokens, output tokens, and cache hits, giving you complete visibility into your wholesale AI spending per conversation.'
 		},
 		{
 			id: 'item-8',

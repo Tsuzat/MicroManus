@@ -17,7 +17,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 		.select({
 			totalCost: sql<number>`sum(cast(${usageEvents.costUsd} as numeric))`,
 			totalInputTokens: sql<number>`sum(${usageEvents.inputTokens})`,
-			totalOutputTokens: sql<number>`sum(${usageEvents.outputTokens})`
+			totalOutputTokens: sql<number>`sum(${usageEvents.outputTokens})`,
+			totalCacheTokens: sql<number>`sum(${usageEvents.cacheReadTokens} + ${usageEvents.cacheWriteTokens})`
 		})
 		.from(usageEvents)
 		.where(eq(usageEvents.userId, userId));
@@ -50,6 +51,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 			costUsd: usageEvents.costUsd,
 			inputTokens: usageEvents.inputTokens,
 			outputTokens: usageEvents.outputTokens,
+			cacheReadTokens: usageEvents.cacheReadTokens,
+			cacheWriteTokens: usageEvents.cacheWriteTokens,
 			createdAt: usageEvents.createdAt
 		})
 		.from(usageEvents)
@@ -72,6 +75,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 				costUsd: 0,
 				inputTokens: 0,
 				outputTokens: 0,
+				cacheTokens: 0,
 				models: new Set()
 			});
 		}
@@ -80,6 +84,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		chatEntry.costUsd += Number(usage.costUsd || 0);
 		chatEntry.inputTokens += usage.inputTokens || 0;
 		chatEntry.outputTokens += usage.outputTokens || 0;
+		chatEntry.cacheTokens += (usage.cacheReadTokens || 0) + (usage.cacheWriteTokens || 0);
 		chatEntry.models.add(getModelConfig(usage.model)?.label || usage.model);
 
 		// Model map
@@ -108,6 +113,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 				costUsd: usage?.costUsd || 0,
 				inputTokens: usage?.inputTokens || 0,
 				outputTokens: usage?.outputTokens || 0,
+				cacheTokens: usage?.cacheTokens || 0,
 				models: Array.from(usage?.models || [])
 			};
 		})
@@ -118,6 +124,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 			totalCost: Number(totals?.totalCost || 0),
 			totalInputTokens: Number(totals?.totalInputTokens || 0),
 			totalOutputTokens: Number(totals?.totalOutputTokens || 0),
+			totalCacheTokens: Number(totals?.totalCacheTokens || 0),
 			totalChats: Number(chatStats?.totalChats || 0)
 		},
 		chatUsage: enrichedChatUsage,

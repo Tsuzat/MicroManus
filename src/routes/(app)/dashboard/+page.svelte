@@ -10,7 +10,9 @@
 	const { data } = $props();
 
 	// Calculate total tokens
-	const totalTokens = $derived(data.stats.totalInputTokens + data.stats.totalOutputTokens);
+	const totalTokens = $derived(
+		data.stats.totalInputTokens + data.stats.totalOutputTokens + data.stats.totalCacheTokens
+	);
 
 	// Prepare chart data (simple representation of model usage)
 	const maxModelCost = $derived(Math.max(...data.modelUsage.map((m) => m.costUsd), 0.0001));
@@ -52,10 +54,10 @@
 					</Card.Header>
 					<Card.Content>
 						<div class="text-2xl font-bold">{new Intl.NumberFormat().format(totalTokens)}</div>
-						<p class="text-xs text-muted-foreground">
-							{new Intl.NumberFormat().format(data.stats.totalInputTokens)} input / {new Intl.NumberFormat().format(
-								data.stats.totalOutputTokens
-							)} output
+						<p class="mt-1 text-[11px] text-muted-foreground">
+							{new Intl.NumberFormat().format(data.stats.totalInputTokens)} in / {new Intl.NumberFormat().format(
+								data.stats.totalCacheTokens
+							)} cache / {new Intl.NumberFormat().format(data.stats.totalOutputTokens)} out
 						</p>
 					</Card.Content>
 				</Card.Root>
@@ -178,8 +180,20 @@
 														{/each}
 													</div>
 												</td>
-												<td class="p-4 text-right align-middle font-mono text-xs">
-													{new Intl.NumberFormat().format(chat.inputTokens + chat.outputTokens)}
+												<td class="p-4 text-right align-middle">
+													<div
+														class="flex flex-col items-end gap-0.5 text-xs text-muted-foreground"
+													>
+														<span class="font-medium text-foreground"
+															>{new Intl.NumberFormat().format(
+																chat.inputTokens + chat.outputTokens + chat.cacheTokens
+															)} total</span
+														>
+														<span
+															>{chat.inputTokens} in / {chat.cacheTokens} cache / {chat.outputTokens}
+															out</span
+														>
+													</div>
 												</td>
 												<td
 													class="p-4 text-right align-middle font-mono text-xs text-muted-foreground"
