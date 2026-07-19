@@ -11,17 +11,19 @@
 	import DownloadIcon from '@lucide/svelte/icons/download';
 	import RotateCcwIcon from '@lucide/svelte/icons/rotate-ccw';
 	import { toast } from 'svelte-sonner';
+	import FileIcon from '@lucide/svelte/icons/file';
 	import type { Component } from 'svelte';
 
 	interface Props {
 		role: 'user' | 'assistant' | 'system';
 		content: string;
+		attachments?: Array<{ type: string; mediaType: string; url: string; filename?: string }>;
 		modelId?: string;
 		messageId?: string;
 		onRewrite?: (messageId: string) => void;
 	}
 
-	let { role, content, modelId, messageId, onRewrite }: Props = $props();
+	let { role, content, attachments = [], modelId, messageId, onRewrite }: Props = $props();
 
 	let copied = $state(false);
 	let proseContainer: HTMLDivElement | undefined = $state();
@@ -148,6 +150,39 @@
 						<RotateCcwIcon />
 					</Button>
 				{/if}
+			</div>
+		{/if}
+
+		<!-- Render Attachments -->
+		{#if attachments && attachments.length > 0}
+			<div class="mt-2 flex flex-wrap gap-2 {role === 'user' ? 'justify-end' : 'justify-start'}">
+				{#each attachments as attachment}
+					{@const isImage = attachment.mediaType.startsWith('image/')}
+					{#if isImage}
+						<div class="relative overflow-hidden rounded-lg border bg-muted/25">
+							<a href={attachment.url} target="_blank" rel="noopener noreferrer" title="View full image">
+								<img
+									src={attachment.url}
+									alt={attachment.filename || 'Image Attachment'}
+									class="max-h-48 max-w-[240px] rounded-lg object-contain"
+								/>
+							</a>
+						</div>
+					{:else}
+						<a
+							href={attachment.url}
+							download={attachment.filename || 'file'}
+							class="flex items-center gap-2 rounded-lg border bg-muted/40 px-3 py-2 text-xs text-foreground hover:bg-muted transition-colors max-w-[240px] min-w-[120px]"
+							title="Download attachment"
+						>
+							<FileIcon class="size-4 shrink-0 text-muted-foreground" />
+							<div class="flex flex-col min-w-0">
+								<span class="truncate font-medium">{attachment.filename || 'Attachment'}</span>
+								<span class="text-[9px] text-muted-foreground uppercase">{attachment.mediaType.split('/')[1] || 'File'}</span>
+							</div>
+						</a>
+					{/if}
+				{/each}
 			</div>
 		{/if}
 	</div>

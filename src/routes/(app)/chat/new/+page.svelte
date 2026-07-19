@@ -25,10 +25,15 @@
 		chatInputRef?.focus();
 	}
 
-	async function handleSubmit(text: string) {
+	async function handleSubmit(text: string, files?: Array<{ name: string; type: string; url: string }>) {
 		// 1. Create a new chat
 		const newChat = await chatsContext.createChat();
 		if (!newChat) return;
+
+		// Save files to global window state temporarily
+		if (files && files.length > 0 && typeof window !== 'undefined') {
+			(window as any).__micromanus_pending_files = files;
+		}
 
 		// 2. Navigate to the new chat page with the initial message as a search param
 		const encoded = encodeURIComponent(text);

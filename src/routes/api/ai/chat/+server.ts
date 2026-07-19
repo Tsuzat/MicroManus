@@ -56,11 +56,25 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 						.map((p) => p.text)
 						.join('\n') || '';
 
+					// Extract files parts if present
+					const userFiles = lastUserMessage.parts
+						?.filter((p) => p.type === 'file')
+						.map((p: any) => ({
+							type: 'file',
+							mediaType: p.mediaType,
+							url: p.url,
+							filename: p.filename
+						})) ?? [];
+
+					const contentPayload = userFiles.length > 0
+						? JSON.stringify({ text: userText, files: userFiles })
+						: userText;
+
 					// Persist user message
 					await db.insert(messagesTable).values({
 						chatId,
 						role: 'user',
-						content: userText
+						content: contentPayload
 					});
 				}
 

@@ -71,6 +71,13 @@ export const MODELS: ModelConfig[] = [
 
 	// --- Google: Gemini 3.1 Pro / 3.5 Flash ---
 	{
+		id: 'gemini-2.5-flash-lite',
+		label: 'Gemini 2.5 Flash Lite',
+		provider: 'google',
+		contextWindow: 1_000_000,
+		pricing: { inputPerMTok: 0.25, outputPerMTok: 2.0 }
+	},
+	{
 		id: 'gemini-3.1-pro',
 		label: 'Gemini 3.1 Pro',
 		provider: 'google',

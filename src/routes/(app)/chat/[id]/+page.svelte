@@ -55,12 +55,39 @@
 	function convertDbMessagesToUIMessages(
 		dbMessages: Array<{ id: string; role: string; content: string; createdAt: Date }>
 	): UIMessage[] {
-		return dbMessages.map((msg) => ({
-			id: msg.id,
-			role: msg.role as 'user' | 'assistant',
-			parts: [{ type: 'text' as const, text: msg.content }],
-			createdAt: new Date(msg.createdAt)
-		}));
+		return dbMessages.map((msg) => {
+			let text = msg.content;
+			let fileParts: any[] = [];
+
+			if (msg.content.startsWith('{') && msg.content.endsWith('}')) {
+				try {
+					const parsed = JSON.parse(msg.content);
+					if (parsed && typeof parsed === 'object' && ('text' in parsed || 'files' in parsed)) {
+						text = parsed.text || '';
+						if (parsed.files && Array.isArray(parsed.files)) {
+							fileParts = parsed.files.map((f: any) => ({
+								type: 'file',
+								mediaType: f.mediaType,
+								url: f.url,
+								filename: f.filename
+							}));
+						}
+					}
+				} catch {
+					// Fallback to text
+				}
+			}
+
+			return {
+				id: msg.id,
+				role: msg.role as 'user' | 'assistant',
+				parts: [
+					{ type: 'text' as const, text },
+					...fileParts
+				],
+				createdAt: new Date(msg.createdAt)
+			};
+		});
 	}
 
 	function handleModelSelect(modelId: string) {
@@ -70,8 +97,18 @@
 		}
 	}
 
-	function handleSubmit(text: string) {
-		chat.sendMessage({ text });
+	function handleSubmit(text: string, attachedFiles?: Array<{ name: string; type: string; url: string }>) {
+		if (attachedFiles && attachedFiles.length > 0) {
+			const files = attachedFiles.map(f => ({
+				type: 'file' as const,
+				mediaType: f.type,
+				url: f.url,
+				filename: f.name
+			}));
+			chat.sendMessage({ text, files });
+		} else {
+			chat.sendMessage({ text });
+		}
 		scrollToBottom();
 	}
 
@@ -128,7 +165,14 @@
 
 			// Send the initial message
 			await tick();
-			chat.sendMessage({ text: decodeURIComponent(initialMessage) });
+			const text = decodeURIComponent(initialMessage);
+			const pendingFiles = (window as any).__micromanus_pending_files;
+			if (pendingFiles) {
+				delete (window as any).__micromanus_pending_files;
+				handleSubmit(text, pendingFiles);
+			} else {
+				handleSubmit(text);
+			}
 		}
 	});
 
@@ -164,10 +208,17 @@
 				{:else}
 					{#each chat.messages as message (message.id)}
 						{@const textParts = message.parts?.filter((p) => p.type === 'text') ?? []}
-						{@const content = textParts.map((p) => p.text).join('\n')}
+						{@const content = textParts.length > 0 ? textParts.map((p) => p.text).join('\n') : message.content}
+						{@const attachments = message.parts?.filter((p) => p.type === 'file').map((p: any) => ({
+							type: p.type,
+							mediaType: p.mediaType,
+							url: p.url,
+							filename: p.filename
+						})) ?? []}
 						<MessageBubble
 							role={message.role as 'user' | 'assistant'}
 							{content}
+							{attachments}
 							modelId={message.role === 'assistant' ? selectedModelId : undefined}
 							messageId={message.id}
 							onRewrite={(id) => chat.regenerate({ messageId: id })}
