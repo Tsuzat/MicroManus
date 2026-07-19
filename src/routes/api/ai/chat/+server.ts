@@ -68,7 +68,12 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 	// --- Stream the agent and persist on completion ---
 	const result = await agent.stream({
 		messages: await convertToModelMessages(messages),
+		onStepStart: ({ steps }) => {
+			console.log('=== STEP START ===', steps);
+		},
 		onEnd: async ({ text, usage, reasoningText, toolResults }) => {
+			console.log('REASONING TEXT = ', reasoningText);
+			console.log('TOOL RESULTS = ', toolResults);
 			try {
 				// 1. Persist user message
 				const lastUserMessage = [...messages].reverse().find((m) => m.role === 'user');
@@ -158,6 +163,11 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 	});
 
 	return createUIMessageStreamResponse({
-		stream: toUIMessageStream({ stream: result.stream, tools: agent.tools, sendReasoning: true })
+		stream: toUIMessageStream({
+			stream: result.stream,
+			tools: agent.tools,
+			sendReasoning: true,
+			sendSources: true
+		})
 	});
 };

@@ -197,7 +197,7 @@
 
 <div class="flex h-full flex-col">
 	<!-- Header -->
-	<div class="flex items-center justify-between border-b p-4 pb-2">
+	<div class="flex items-center justify-between p-4 pb-2">
 		<h1 class="truncate text-sm font-medium">{chatTitle}</h1>
 		{#if data.chat}
 			<ChatExportButton chatId={data.chat.id} {chatTitle} />
@@ -226,7 +226,7 @@
 						{@const attachments =
 							message.parts
 								?.filter((p) => p.type === 'file')
-								.map((p: any) => ({
+								.map((p) => ({
 									type: p.type,
 									mediaType: p.mediaType,
 									url: p.url,
@@ -243,7 +243,9 @@
 								?.filter((p) => p.type === 'tool-invocation')
 								.map((p: any) => p.toolInvocation) ?? []}
 						{@const toolInvocations =
-							toolInvocationParts.length > 0 ? toolInvocationParts : (message.toolInvocations ?? [])}
+							toolInvocationParts.length > 0
+								? toolInvocationParts
+								: (message.toolInvocations ?? [])}
 
 						{@const sourcesAnnotation = message.annotations?.find(
 							(a) => (a as any).type === 'sources'

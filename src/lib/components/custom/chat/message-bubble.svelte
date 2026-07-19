@@ -45,6 +45,29 @@
 	let copied = $state(false);
 	let proseContainer: HTMLDivElement | undefined = $state();
 
+	function getHostname(url: string) {
+		try {
+			return new URL(url).hostname;
+		} catch {
+			return url;
+		}
+	}
+
+	const allSources = $derived.by(() => {
+		if (sources && sources.length > 0) return sources;
+		if (toolInvocations && toolInvocations.length > 0) {
+			const found: any[] = [];
+			for (const t of toolInvocations) {
+				const res = t.result || (t as any).output;
+				if (res?.results && Array.isArray(res.results)) {
+					found.push(...res.results);
+				}
+			}
+			return found;
+		}
+		return [];
+	});
+
 	const providerIcons: Record<AIProvider, Component> = {
 		openai: OpenAIIcon,
 		anthropic: AnthropicIcon,
@@ -158,65 +181,89 @@
 				<Streamdown class="render-markdown" {content} components={{ code: Code, math: Math }} />
 			</div>
 
-			{#if sources && sources.length > 0}
-				<SourceCitations {sources} />
+			{#if allSources && allSources.length > 0}
+				<SourceCitations sources={allSources} />
 			{/if}
 
-			<!-- Actions (visible on hover) -->
-			<div
-				class="flex items-center gap-1 pt-1 opacity-0 transition-opacity group-hover:opacity-100"
-			>
-				<!-- Copy Button -->
-				<Button
-					variant="ghost"
-					size="icon"
-					class="size-8 text-muted-foreground hover:bg-muted hover:text-foreground"
-					onclick={copyContent}
-					title="Copy Response"
-				>
-					{#if copied}
-						<CheckIcon class="text-emerald-500" />
-					{:else}
-						<CopyIcon />
-					{/if}
-				</Button>
-
-				<!-- Download Dropdown -->
-				<DropdownMenu.Root>
-					<DropdownMenu.Trigger>
-						{#snippet child({ props })}
-							<Button
-								variant="ghost"
-								size="icon"
-								class="size-8 text-muted-foreground hover:bg-muted hover:text-foreground"
-								{...props}
-								title="Download Options"
-							>
-								<DownloadIcon />
-							</Button>
-						{/snippet}
-					</DropdownMenu.Trigger>
-					<DropdownMenu.Content align="center" class="w-36">
-						<DropdownMenu.Item onclick={downloadAsMarkdown}>
-							<span>Markdown (.md)</span>
-						</DropdownMenu.Item>
-						<DropdownMenu.Item onclick={downloadAsPDF}>
-							<span>PDF (.pdf)</span>
-						</DropdownMenu.Item>
-					</DropdownMenu.Content>
-				</DropdownMenu.Root>
-
-				<!-- Rewrite Button -->
-				{#if messageId && onRewrite}
+			<!-- Actions & Web Sources Toolbar -->
+			<div class="flex flex-wrap items-center gap-2 pt-1">
+				<!-- Action Buttons (Copy, Download, Regenerate) -->
+				<div class="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+					<!-- Copy Button -->
 					<Button
 						variant="ghost"
 						size="icon"
 						class="size-8 text-muted-foreground hover:bg-muted hover:text-foreground"
-						onclick={() => onRewrite(messageId)}
-						title="Regenerate Response"
+						onclick={copyContent}
+						title="Copy Response"
 					>
-						<RotateCcwIcon />
+						{#if copied}
+							<CheckIcon class="text-emerald-500" />
+						{:else}
+							<CopyIcon />
+						{/if}
 					</Button>
+
+					<!-- Download Dropdown -->
+					<DropdownMenu.Root>
+						<DropdownMenu.Trigger>
+							{#snippet child({ props })}
+								<Button
+									variant="ghost"
+									size="icon"
+									class="size-8 text-muted-foreground hover:bg-muted hover:text-foreground"
+									{...props}
+									title="Download Options"
+								>
+									<DownloadIcon />
+								</Button>
+							{/snippet}
+						</DropdownMenu.Trigger>
+						<DropdownMenu.Content align="center" class="w-36">
+							<DropdownMenu.Item onclick={downloadAsMarkdown}>
+								<span>Markdown (.md)</span>
+							</DropdownMenu.Item>
+							<DropdownMenu.Item onclick={downloadAsPDF}>
+								<span>PDF (.pdf)</span>
+							</DropdownMenu.Item>
+						</DropdownMenu.Content>
+					</DropdownMenu.Root>
+
+					<!-- Rewrite Button -->
+					{#if messageId && onRewrite}
+						<Button
+							variant="ghost"
+							size="icon"
+							class="size-8 text-muted-foreground hover:bg-muted hover:text-foreground"
+							onclick={() => onRewrite(messageId)}
+							title="Regenerate Response"
+						>
+							<RotateCcwIcon />
+						</Button>
+					{/if}
+				</div>
+
+				<!-- Web Sources Pills next to action icons -->
+				{#if allSources && allSources.length > 0}
+					<div class="flex flex-wrap items-center gap-1.5 border-l border-border/50 pl-2">
+						<span class="mr-1 text-[11px] font-medium text-muted-foreground">Sources:</span>
+						{#each allSources as source, index (index)}
+							<a
+								href={source.url}
+								target="_blank"
+								rel="noopener noreferrer external"
+								class="flex items-center gap-1.5 rounded-full border border-border/60 bg-muted/40 px-2.5 py-0.5 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+								title={`${source.title}\n${source.snippet}`}
+							>
+								<img
+									src={`https://www.google.com/s2/favicons?domain=${getHostname(source.url)}`}
+									alt=""
+									class="size-3 rounded-sm"
+								/>
+								<span class="max-w-[110px] truncate">{getHostname(source.url)}</span>
+							</a>
+						{/each}
+					</div>
 				{/if}
 			</div>
 		{/if}
@@ -231,7 +278,7 @@
 							<a
 								href={attachment.url}
 								target="_blank"
-								rel="noopener noreferrer"
+								rel="noopener external noreferrer"
 								title="View full image"
 							>
 								<img

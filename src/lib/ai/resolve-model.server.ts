@@ -3,7 +3,7 @@
 
 import { createOpenAI } from '@ai-sdk/openai';
 import { createAnthropic } from '@ai-sdk/anthropic';
-import { createGoogleGenerativeAI } from '@ai-sdk/google';
+import { createGoogle } from '@ai-sdk/google';
 import { getModelConfig } from '$lib/ai/providers';
 import type { LanguageModel } from 'ai';
 import { db } from '$lib/server/db';
@@ -86,7 +86,7 @@ export async function resolveModel(modelId: string, userId: string): Promise<Lan
 			return anthropic(config.id);
 		}
 		case 'google': {
-			const google = createGoogleGenerativeAI({
+			const google = createGoogle({
 				apiKey: userKey
 			});
 			return google(config.id);
