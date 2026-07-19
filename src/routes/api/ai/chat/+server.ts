@@ -13,6 +13,20 @@ import { messages as messagesTable, chats, usageEvents } from '$lib/server/db/sc
 import { eq, and } from 'drizzle-orm';
 import { getModelConfig } from '$lib/ai/providers';
 import { webSearch } from '$lib/ai/search-tool.server';
+import { redis, password } from 'bun';
+
+// --- Wrap webSearch with a Redis cache layer ---
+const cachedWebSearch = {
+	...webSearch,
+	execute: async (args: any, options: any) => {
+		const key = `search:${password.hash(JSON.stringify(args))}`;
+		const hit = await redis.get(key);
+		if (hit) return JSON.parse(hit as string);
+		const result = await webSearch.execute(args, options);
+		await redis.set(key, JSON.stringify(result), 'EX', 3600);
+		return result;
+	}
+};
 
 export const POST: RequestHandler = async ({ request, locals }) => {
 	if (!locals.user) {
@@ -53,20 +67,22 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 	let providerOptions = undefined;
 	if (modelConfig?.provider === 'anthropic') {
 		providerOptions = {
-			anthropic: { thinking: { type: 'enabled', budgetTokens: 10000 } }
+			anthropic: {
+				thinking: { type: 'enabled', budgetTokens: 10000 },
+				cacheControl: { type: 'ephemeral' } // marks static prefix (system + tools) cacheable
+			}
 		};
 	} else if (modelConfig?.provider === 'openai') {
 		providerOptions = {
-			openai: {
-				reasoningSummary: 'auto'
-			}
+			openai: { reasoningSummary: 'auto' }
+			// no config needed — OpenAI auto-caches identical prefixes >1024 tokens
 		};
 	}
 
 	// --- Agent with webSearch tool always available ---
 	const agent = new ToolLoopAgent({
 		model: languageModel,
-		tools: { webSearch },
+		tools: { cachedWebSearch },
 		stopWhen: isStepCount(10), // Max 10 loop iterations
 		providerOptions
 	});
@@ -139,22 +155,54 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 					.returning();
 
 				// 4. Log usage
+				// if (usage) {
+				// 	const inputTokens = usage.inputTokens ?? 0;
+				// 	const outputTokens = usage.outputTokens ?? 0;
+				// 	const inputCost = modelConfig
+				// 		? (inputTokens / 1_000_000) * modelConfig.pricing.inputPerMTok
+				// 		: 0;
+				// 	const outputCost = modelConfig
+				// 		? (outputTokens / 1_000_000) * modelConfig.pricing.outputPerMTok
+				// 		: 0;
+				// 	await db.insert(usageEvents).values({
+				// 		messageId: assistantMsg.id,
+				// 		userId: locals.user!.id,
+				// 		model: modelId,
+				// 		inputTokens,
+				// 		outputTokens,
+				// 		costUsd: (inputCost + outputCost).toFixed(6)
+				// 	});
+				// }
+				// 4. Log usage
 				if (usage) {
 					const inputTokens = usage.inputTokens ?? 0;
 					const outputTokens = usage.outputTokens ?? 0;
+					// AI SDK normalizes these across providers as cachedInputTokens;
+					// Anthropic maps its cache_read_input_tokens here, OpenAI its cached_tokens
+					const cachedTokens = (usage as any).cachedInputTokens ?? 0;
+					const cachedOutputTokens = (usage as any).cachedOutputTokens ?? 0;
+
+					const billableInputTokens = inputTokens - cachedTokens;
+
 					const inputCost = modelConfig
-						? (inputTokens / 1_000_000) * modelConfig.pricing.inputPerMTok
+						? (billableInputTokens / 1_000_000) * modelConfig.pricing.inputPerMTok
+						: 0;
+					const cacheCost = modelConfig?.pricing.cachedInputPerMTok
+						? (cachedTokens / 1_000_000) * modelConfig.pricing.cachedInputPerMTok
 						: 0;
 					const outputCost = modelConfig
 						? (outputTokens / 1_000_000) * modelConfig.pricing.outputPerMTok
 						: 0;
+
 					await db.insert(usageEvents).values({
 						messageId: assistantMsg.id,
 						userId: locals.user!.id,
 						model: modelId,
-						inputTokens,
+						inputTokens: billableInputTokens,
 						outputTokens,
-						costUsd: (inputCost + outputCost).toFixed(6)
+						cacheReadTokens: cachedTokens,
+						cacheWriteTokens: cachedOutputTokens,
+						costUsd: (inputCost + cacheCost + outputCost).toFixed(6)
 					});
 				}
 
