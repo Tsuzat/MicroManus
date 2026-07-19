@@ -5,3 +5,4 @@ import ConfirmDeleteDialog, {
 
 export { ConfirmDeleteDialog, confirmDelete, type ConfirmDeleteOptions };
 export default ConfirmDeleteDialog;
+export { default as SearchDialog } from './search.svelte';

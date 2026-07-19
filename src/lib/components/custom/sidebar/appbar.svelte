@@ -2,7 +2,7 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
-	import { AppLogo } from '$lib/components/custom';
+	import { AppLogo, SearchDialog } from '$lib/components/custom';
 	import ChatTile from './chattile.svelte';
 	import { useChatsContext } from '$lib/hooks/chats.svelte';
 	import * as Avatar from '$lib/components/ui/avatar';
@@ -30,6 +30,7 @@
 	}
 
 	let { user }: Props = $props();
+	let open = $state(false);
 
 	const sidebar = useSidebar();
 	const chatsContext = useChatsContext();
@@ -39,6 +40,7 @@
 	const isSettingsActive = $derived(page.url.pathname.includes('/settings'));
 </script>
 
+<SearchDialog bind:open />
 <Sidebar.Root variant="inset" collapsible="icon" id="sidebar-main">
 	<Sidebar.Header>
 		<Sidebar.Menu>
@@ -77,13 +79,9 @@
 				</Sidebar.MenuItem>
 
 				<Sidebar.MenuItem>
-					<Sidebar.MenuButton>
-						{#snippet child({ props })}
-							<a href="#" title="Search Chats" {...props}>
-								<SearchIcon class="size-4 shrink-0 text-muted-foreground" />
-								<span>Search Chats</span>
-							</a>
-						{/snippet}
+					<Sidebar.MenuButton onclick={() => (open = true)}>
+						<SearchIcon class="size-4 shrink-0 text-muted-foreground" />
+						<span>Search Chats</span>
 					</Sidebar.MenuButton>
 				</Sidebar.MenuItem>
 

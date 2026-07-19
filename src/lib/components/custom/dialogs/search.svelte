@@ -8,7 +8,7 @@
 	interface Props {
 		open?: boolean;
 	}
-	let { open }: Props = $props();
+	let { open = $bindable(false) }: Props = $props();
 
 	const chats = $derived(useChatsContext().chats);
 
