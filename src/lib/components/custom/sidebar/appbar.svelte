@@ -68,7 +68,7 @@
 				<Sidebar.MenuItem>
 					<Sidebar.MenuButton isActive={isDashboardActive}>
 						{#snippet child({ props })}
-							<a href={resolve('/(app)/chat/new')} title="Dashboard" {...props}>
+							<a href={resolve('/(app)/dashboard')} title="Dashboard" {...props}>
 								<LayoutDashboardIcon class="size-4 shrink-0 text-muted-foreground" />
 								<span>Dashboard</span>
 							</a>

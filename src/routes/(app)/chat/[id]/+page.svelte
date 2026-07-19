@@ -232,8 +232,19 @@
 									url: p.url,
 									filename: p.filename
 								})) ?? []}
-						{@const reasoning = message.reasoning}
-						{@const toolInvocations = message.toolInvocations}
+						{@const reasoningParts = message.parts?.filter((p) => p.type === 'reasoning') ?? []}
+						{@const reasoning =
+							reasoningParts.length > 0
+								? reasoningParts.map((p: any) => p.reasoning || p.text).join('\n')
+								: message.reasoning}
+
+						{@const toolInvocationParts =
+							message.parts
+								?.filter((p) => p.type === 'tool-invocation')
+								.map((p: any) => p.toolInvocation) ?? []}
+						{@const toolInvocations =
+							toolInvocationParts.length > 0 ? toolInvocationParts : (message.toolInvocations ?? [])}
+
 						{@const sourcesAnnotation = message.annotations?.find(
 							(a) => (a as any).type === 'sources'
 						)}

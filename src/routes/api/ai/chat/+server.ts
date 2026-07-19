@@ -1,10 +1,18 @@
 import { json, type RequestHandler } from '@sveltejs/kit';
-import { streamText, type UIMessage, convertToModelMessages } from 'ai';
+import {
+	type UIMessage,
+	ToolLoopAgent,
+	isStepCount,
+	toUIMessageStream,
+	createUIMessageStreamResponse,
+	convertToModelMessages
+} from 'ai';
 import { resolveModel } from '$lib/ai/resolve-model.server';
 import { db } from '$lib/server/db';
 import { messages as messagesTable, chats, usageEvents } from '$lib/server/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { getModelConfig } from '$lib/ai/providers';
+import { webSearch } from '$lib/ai/search-tool.server';
 
 export const POST: RequestHandler = async ({ request, locals }) => {
 	if (!locals.user) {
@@ -19,7 +27,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 	}: { messages: UIMessage[]; model: string; chatId: string } = body;
 
 	if (!messages || !modelId || !chatId) {
-		return json({ error: 'Missing required fields: messages, model, chatId' }, { status: 400 });
+		return json({ error: 'Missing required fields' }, { status: 400 });
 	}
 
 	// Verify chat ownership
@@ -33,65 +41,82 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		return json({ error: 'Chat not found or access denied' }, { status: 404 });
 	}
 
-	// Resolve the AI model
+	const modelConfig = getModelConfig(modelId);
 	let languageModel;
 	try {
 		languageModel = await resolveModel(modelId, locals.user.id);
 	} catch (err: any) {
-		return new Response(err.message || `Failed to resolve model: ${modelId}`, { status: 400 });
+		return new Response(err.message || `Failed to resolve model`, { status: 400 });
 	}
 
-	const result = streamText({
-		model: languageModel,
-		messages: await convertToModelMessages(messages),
-		onFinish: async ({ text, usage }) => {
-			try {
-				// Find the last user message to persist
-				const lastUserMessage = [...messages].reverse().find((m) => m.role === 'user');
+	// Build provider options for thinking models
+	let providerOptions = undefined;
+	if (modelConfig?.provider === 'anthropic') {
+		providerOptions = {
+			anthropic: { thinking: { type: 'enabled', budgetTokens: 10000 } }
+		};
+	}
 
+	// --- Agent with webSearch tool always available ---
+	const agent = new ToolLoopAgent({
+		model: languageModel,
+		tools: { webSearch },
+		stopWhen: isStepCount(10), // Max 10 loop iterations
+		providerOptions
+	});
+
+	// --- Stream the agent and persist on completion ---
+	const result = await agent.stream({
+		messages: await convertToModelMessages(messages),
+		onEnd: async ({ text, usage, reasoningText, toolResults }) => {
+			try {
+				// 1. Persist user message
+				const lastUserMessage = [...messages].reverse().find((m) => m.role === 'user');
 				if (lastUserMessage) {
-					// Extract text content from the user message parts
 					const userText =
 						lastUserMessage.parts
 							?.filter((p) => p.type === 'text')
 							.map((p) => p.text)
 							.join('\n') || '';
-
-					// Extract files parts if present
 					const userFiles =
 						lastUserMessage.parts
 							?.filter((p) => p.type === 'file')
-							.map((p: any) => ({
+							.map((p) => ({
 								type: 'file',
 								mediaType: p.mediaType,
 								url: p.url,
 								filename: p.filename
 							})) ?? [];
-
 					const contentPayload =
 						userFiles.length > 0 ? JSON.stringify({ text: userText, files: userFiles }) : userText;
-
-					// Persist user message
-					await db.insert(messagesTable).values({
-						chatId,
-						role: 'user',
-						content: contentPayload
-					});
+					await db.insert(messagesTable).values({ chatId, role: 'user', content: contentPayload });
 				}
 
-				// Persist assistant message
+				// 2. Extract sources from webSearch tool results
+				const sources: any[] = [];
+				if (toolResults?.length) {
+					for (const tr of toolResults) {
+						if (tr.toolName === 'webSearch' && (tr as any).result?.results) {
+							sources.push(...(tr as any).result.results);
+						}
+					}
+				}
+
+				// 3. Persist assistant message
 				const [assistantMsg] = await db
 					.insert(messagesTable)
 					.values({
 						chatId,
 						role: 'assistant',
-						content: text
+						content: text,
+						reasoning: reasoningText || null,
+						sources: sources.length > 0 ? sources : null,
+						modelId
 					})
 					.returning();
 
-				// Log usage event
+				// 4. Log usage
 				if (usage) {
-					const modelConfig = getModelConfig(modelId);
 					const inputTokens = usage.inputTokens ?? 0;
 					const outputTokens = usage.outputTokens ?? 0;
 					const inputCost = modelConfig
@@ -100,7 +125,6 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 					const outputCost = modelConfig
 						? (outputTokens / 1_000_000) * modelConfig.pricing.outputPerMTok
 						: 0;
-
 					await db.insert(usageEvents).values({
 						messageId: assistantMsg.id,
 						userId: locals.user!.id,
@@ -111,22 +135,20 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 					});
 				}
 
-				// Auto-generate chat title from first user message if still "New Chat"
+				// 5. Auto-title
 				if (chat.title === 'New Chat' && lastUserMessage) {
-					const userText =
+					const t =
 						lastUserMessage.parts
 							?.filter((p) => p.type === 'text')
-							.map((p) => p.text)
+							.map((p: any) => p.text)
 							.join(' ') || '';
-					const autoTitle = userText.slice(0, 80) + (userText.length > 80 ? '…' : '');
-					if (autoTitle) {
+					const autoTitle = t.slice(0, 80) + (t.length > 80 ? '…' : '');
+					if (autoTitle)
 						await db
 							.update(chats)
 							.set({ title: autoTitle, updatedAt: new Date() })
 							.where(eq(chats.id, chatId));
-					}
 				} else {
-					// Update the chat's updatedAt timestamp
 					await db.update(chats).set({ updatedAt: new Date() }).where(eq(chats.id, chatId));
 				}
 			} catch (err) {
@@ -135,5 +157,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		}
 	});
 
-	return result.toUIMessageStreamResponse();
+	return createUIMessageStreamResponse({
+		stream: toUIMessageStream({ stream: result.stream, tools: agent.tools, sendReasoning: true })
+	});
 };

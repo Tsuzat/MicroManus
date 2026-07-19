@@ -18,6 +18,8 @@ export const webSearch = tool({
 		}
 
 		try {
+			console.log('============DID WEB SEARCH===============');
+			console.log('QUERY = ', query);
 			const url = new URL('https://serpapi.com/search.json');
 			url.searchParams.set('q', query);
 			url.searchParams.set('api_key', apiKey);
@@ -30,6 +32,8 @@ export const webSearch = tool({
 			}
 
 			const data = await response.json();
+
+			console.log('DATA JSON', data);
 
 			if (!data.organic_results) {
 				return { results: [], message: 'No results found.' };
