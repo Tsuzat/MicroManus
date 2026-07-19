@@ -1,0 +1,17 @@
+{
+	"version": 1,
+	"skills": {
+		"shadcn-svelte": {
+			"source": "huntabyte/shadcn-svelte",
+			"sourceType": "github",
+			"skillPath": "skills/shadcn-svelte/SKILL.md",
+			"computedHash": "d4f3f983a71466a86649985a8a7fbce47da29f44de3a9d02540bbcf3167134e0"
+		},
+		"tailwind-4-docs": {
+			"source": "lombiq/tailwind-agent-skills",
+			"sourceType": "github",
+			"skillPath": "skills/tailwind-4-docs/SKILL.md",
+			"computedHash": "de756f5f03cc20a029983875b00b9dfef9d0ba8567d242c5cbb0262037d0a134"
+		}
+	}
+}

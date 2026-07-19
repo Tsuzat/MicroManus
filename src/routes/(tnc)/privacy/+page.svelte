@@ -182,9 +182,7 @@
 	<ul>
 		<li class="flex list-none items-center gap-4">
 			<Email class="size-4" />
-			<a class="nodefault" href="mailto:contact@tsuzat.com"
-				><strong>contact@tsuzat.com</strong></a
-			>
+			<a class="nodefault" href="mailto:contact@tsuzat.com"><strong>contact@tsuzat.com</strong></a>
 		</li>
 		<li class="flex list-none items-center gap-4">
 			<Website class="size-4" />
