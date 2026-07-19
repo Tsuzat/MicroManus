@@ -1,13 +1,10 @@
 import { type RequestHandler } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
 import { chats, messages } from '$lib/server/db/schema';
-import { eq, and, asc } from 'drizzle-orm';
-import { chatIdParamSchema } from '$lib/schemas/chat';
+import { eq, and } from 'drizzle-orm';
 import { getModelConfig } from '$lib/ai/providers';
 import { chromium } from 'playwright';
 import { renderChatToHTML } from '$lib/server/pdf/renderer';
-
-// ─── Helpers ────────────────────────────────────────────────────────────────
 
 /** Extract readable text from a message, handling JSON-wrapped content */
 function extractText(raw: string): string {
@@ -24,37 +21,32 @@ function extractText(raw: string): string {
 	return raw;
 }
 
-// ─── GET handler ────────────────────────────────────────────────────────────
-
 export const GET: RequestHandler = async ({ params, locals, url }) => {
 	if (!locals.user) {
 		return new Response('Unauthorized', { status: 401 });
 	}
 
-	const paramResult = chatIdParamSchema.safeParse(params);
-	if (!paramResult.success) {
-		return new Response('Validation failed', { status: 400 });
+	const id = params.id;
+	if (!id) {
+		return new Response('Message ID is required', { status: 400 });
 	}
 
-	const { id } = paramResult.data;
 	const format = url.searchParams.get('format') || 'md';
 
-	const [chat] = await db
-		.select()
-		.from(chats)
-		.where(and(eq(chats.id, id), eq(chats.userId, locals.user.id)))
+	// Join messages and chats to verify ownership
+	const result = await db
+		.select({ message: messages, chat: chats })
+		.from(messages)
+		.innerJoin(chats, eq(messages.chatId, chats.id))
+		.where(and(eq(messages.id, id), eq(chats.userId, locals.user.id)))
 		.limit(1);
 
-	if (!chat) {
-		return new Response('Chat not found', { status: 404 });
+	if (result.length === 0) {
+		return new Response('Message not found or unauthorized', { status: 404 });
 	}
 
-	const chatMessages = await db
-		.select()
-		.from(messages)
-		.where(eq(messages.chatId, id))
-		.orderBy(asc(messages.createdAt));
-
+	const msg = result[0].message;
+	const chatTitle = 'Single Message Export';
 	const exportDate = new Date().toLocaleDateString('en-US', {
 		year: 'numeric',
 		month: 'long',
@@ -63,56 +55,41 @@ export const GET: RequestHandler = async ({ params, locals, url }) => {
 		minute: '2-digit'
 	});
 
-	const safeTitle = chat
-		.title
-		.replace(/[^a-z0-9 ]/gi, '_')
-		.replace(/\s+/g, '_')
-		.toLowerCase();
-
 	// ── Markdown Export ────────────────────────────────────────────────────
 	if (format === 'md') {
 		let md = '';
-
 		md += `---\n`;
-		md += `title: "${chat.title}"\n`;
+		md += `type: "single_message"\n`;
 		md += `exported: "${exportDate}"\n`;
-		md += `messages: ${chatMessages.length}\n`;
 		md += `platform: MicroManus\n`;
 		md += `---\n\n`;
 
-		md += `# ${chat.title}\n\n`;
-		md += `> Exported from **MicroManus** on ${exportDate} · ${chatMessages.length} messages\n\n`;
-		md += `---\n\n`;
+		const text = extractText(msg.content);
 
-		for (const msg of chatMessages) {
-			const text = extractText(msg.content);
+		if (msg.role === 'user') {
+			md += `### 🧑 You\n\n`;
+			md += `> ${text.split('\n').join('\n> ')}\n\n`;
+		} else if (msg.role === 'assistant') {
+			const modelLabel = msg.modelId
+				? (getModelConfig(msg.modelId)?.label ?? msg.modelId)
+				: 'Assistant';
+			md += `### 🤖 ${modelLabel}\n\n`;
 
-			if (msg.role === 'user') {
-				md += `### 🧑 You\n\n`;
-				md += `> ${text.split('\n').join('\n> ')}\n\n`;
-			} else if (msg.role === 'assistant') {
-				const modelLabel = msg.modelId
-					? (getModelConfig(msg.modelId)?.label ?? msg.modelId)
-					: 'Assistant';
-				md += `### 🤖 ${modelLabel}\n\n`;
-
-				if (msg.reasoning) {
-					md += `<details>\n<summary>💭 Reasoning</summary>\n\n`;
-					md += `${msg.reasoning}\n\n`;
-					md += `</details>\n\n`;
-				}
-
-				md += `${text}\n\n`;
-
-				if (msg.sources && Array.isArray(msg.sources) && msg.sources.length > 0) {
-					md += `**📎 Sources:**\n\n`;
-					(msg.sources as any[]).forEach((s: any, i: number) => {
-						md += `${i + 1}. [${s.title || s.url}](${s.url})\n`;
-					});
-					md += `\n`;
-				}
+			if (msg.reasoning) {
+				md += `<details>\n<summary>💭 Reasoning</summary>\n\n`;
+				md += `${msg.reasoning}\n\n`;
+				md += `</details>\n\n`;
 			}
-			md += `---\n\n`;
+
+			md += `${text}\n\n`;
+
+			if (msg.sources && Array.isArray(msg.sources) && msg.sources.length > 0) {
+				md += `**📎 Sources:**\n\n`;
+				(msg.sources as any[]).forEach((s: any, i: number) => {
+					md += `${i + 1}. [${s.title || s.url}](${s.url})\n`;
+				});
+				md += `\n`;
+			}
 		}
 
 		md += `\n*Generated by MicroManus · ${exportDate}*\n`;
@@ -120,7 +97,7 @@ export const GET: RequestHandler = async ({ params, locals, url }) => {
 		return new Response(md, {
 			headers: {
 				'Content-Type': 'text/markdown; charset=utf-8',
-				'Content-Disposition': `attachment; filename="${safeTitle}_export.md"`
+				'Content-Disposition': `attachment; filename="message_${id}_export.md"`
 			}
 		});
 	}
@@ -128,28 +105,20 @@ export const GET: RequestHandler = async ({ params, locals, url }) => {
 	// ── PDF Export (Playwright Server-Side) ──────────────────────────────
 	if (format === 'pdf') {
 		try {
-			const html = await renderChatToHTML(chat.title, exportDate, chatMessages);
+			const html = await renderChatToHTML(chatTitle, exportDate, [msg]);
 
-			// Launch headless chromium
 			const browser = await chromium.launch({ 
 				headless: true,
 				args: ['--no-sandbox', '--disable-setuid-sandbox'] 
 			});
 			const page = await browser.newPage();
 			
-			// Load the HTML content
 			await page.setContent(html, { waitUntil: 'networkidle' });
 
-			// Generate PDF
 			const pdfBuffer = await page.pdf({
 				format: 'A4',
 				printBackground: true,
-				margin: {
-					top: '20mm',
-					bottom: '20mm',
-					left: '0mm',
-					right: '0mm'
-				},
+				margin: { top: '20mm', bottom: '20mm', left: '0mm', right: '0mm' },
 				displayHeaderFooter: true,
 				headerTemplate: '<div></div>',
 				footerTemplate: `
@@ -165,7 +134,7 @@ export const GET: RequestHandler = async ({ params, locals, url }) => {
 			return new Response(pdfBuffer, {
 				headers: {
 					'Content-Type': 'application/pdf',
-					'Content-Disposition': `attachment; filename="${safeTitle}_export.pdf"`
+					'Content-Disposition': `attachment; filename="message_${id}_export.pdf"`
 				}
 			});
 		} catch (error) {

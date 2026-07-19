@@ -44,7 +44,6 @@
 		"globals": "^17.6.0",
 		"mode-watcher": "^1.1.0",
 		"motion-sv": "^0.1.13",
-		"playwright": "^1.60.0",
 		"prettier": "^3.8.3",
 		"prettier-plugin-svelte": "^4.1.0",
 		"prettier-plugin-tailwindcss": "^0.8.0",
@@ -74,6 +73,8 @@
 		"better-auth": "~1.4.21",
 		"drizzle-orm": "^0.45.2",
 		"jspdf": "^4.2.1",
+		"marked": "^18.0.6",
+		"playwright": "^1.60.0",
 		"postgres": "^3.4.9",
 		"runed": "^0.37.1",
 		"svelte-streamdown": "^3.1.2"

@@ -83,24 +83,39 @@
 		}
 	}
 
-	function downloadAsMarkdown() {
+	async function handleExport(format: 'pdf' | 'md') {
+		if (!messageId) {
+			toast.error('Cannot export message without an ID');
+			return;
+		}
+
+		toast.info(`Generating ${format.toUpperCase()}...`);
 		try {
-			const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' });
+			const res = await fetch(`/api/message/${messageId}/export?format=${format}`);
+			if (!res.ok) throw new Error('Failed to generate export');
+
+			const blob = await res.blob();
 			const url = URL.createObjectURL(blob);
 			const a = document.createElement('a');
 			a.href = url;
-			a.download = `ai-response-${messageId || 'msg'}.md`;
+			a.download = `message_${messageId}_export.${format}`;
 			document.body.appendChild(a);
 			a.click();
 			document.body.removeChild(a);
 			URL.revokeObjectURL(url);
-			toast.success('Response downloaded as Markdown (.md)');
+			toast.success(`Response downloaded as ${format.toUpperCase()}`);
 		} catch {
-			toast.error('Failed to download Markdown file');
+			toast.error(`Failed to download ${format.toUpperCase()} file`);
 		}
 	}
 
-	function downloadAsPDF() {}
+	function downloadAsMarkdown() {
+		handleExport('md');
+	}
+
+	function downloadAsPDF() {
+		handleExport('pdf');
+	}
 </script>
 
 <div class="group flex gap-3 py-4 {role === 'user' ? 'flex-row-reverse' : ''}">

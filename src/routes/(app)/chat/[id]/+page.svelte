@@ -210,9 +210,7 @@
 	<!-- Header -->
 	<div class="flex items-center justify-between p-4 pb-2">
 		<h1 class="truncate text-sm font-medium">{chatTitle}</h1>
-		{#if data.chat}
-			<ChatExportButton chatId={data.chat.id} {chatTitle} />
-		{/if}
+		<ChatExportButton chatId={data.chat.id} {chatTitle} />
 	</div>
 
 	<!-- Messages area container -->

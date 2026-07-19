@@ -59,7 +59,7 @@
 			<span class="hidden sm:inline">Export</span>
 		</Button>
 	</DropdownMenu.Trigger>
-	<DropdownMenu.Content align="end">
+	<DropdownMenu.Content class="w-fit">
 		<DropdownMenu.Item onclick={() => handleExport('pdf')} class="gap-2">
 			<FileIcon class="size-4" />
 			<span>Download as PDF</span>
