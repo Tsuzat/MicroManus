@@ -51,24 +51,25 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
 				if (lastUserMessage) {
 					// Extract text content from the user message parts
-					const userText = lastUserMessage.parts
-						?.filter((p) => p.type === 'text')
-						.map((p) => p.text)
-						.join('\n') || '';
+					const userText =
+						lastUserMessage.parts
+							?.filter((p) => p.type === 'text')
+							.map((p) => p.text)
+							.join('\n') || '';
 
 					// Extract files parts if present
-					const userFiles = lastUserMessage.parts
-						?.filter((p) => p.type === 'file')
-						.map((p: any) => ({
-							type: 'file',
-							mediaType: p.mediaType,
-							url: p.url,
-							filename: p.filename
-						})) ?? [];
+					const userFiles =
+						lastUserMessage.parts
+							?.filter((p) => p.type === 'file')
+							.map((p: any) => ({
+								type: 'file',
+								mediaType: p.mediaType,
+								url: p.url,
+								filename: p.filename
+							})) ?? [];
 
-					const contentPayload = userFiles.length > 0
-						? JSON.stringify({ text: userText, files: userFiles })
-						: userText;
+					const contentPayload =
+						userFiles.length > 0 ? JSON.stringify({ text: userText, files: userFiles }) : userText;
 
 					// Persist user message
 					await db.insert(messagesTable).values({
@@ -126,10 +127,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 					}
 				} else {
 					// Update the chat's updatedAt timestamp
-					await db
-						.update(chats)
-						.set({ updatedAt: new Date() })
-						.where(eq(chats.id, chatId));
+					await db.update(chats).set({ updatedAt: new Date() }).where(eq(chats.id, chatId));
 				}
 			} catch (err) {
 				console.error('[AI Chat] Failed to persist messages:', err);

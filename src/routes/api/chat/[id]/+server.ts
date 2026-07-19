@@ -11,7 +11,10 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 
 	const paramResult = chatIdParamSchema.safeParse(params);
 	if (!paramResult.success) {
-		return json({ error: 'Validation failed', details: paramResult.error.flatten() }, { status: 400 });
+		return json(
+			{ error: 'Validation failed', details: paramResult.error.flatten() },
+			{ status: 400 }
+		);
 	}
 
 	const { id } = paramResult.data;
@@ -36,7 +39,10 @@ export const PATCH: RequestHandler = async ({ params, request, locals }) => {
 
 	const paramResult = chatIdParamSchema.safeParse(params);
 	if (!paramResult.success) {
-		return json({ error: 'Validation failed', details: paramResult.error.flatten() }, { status: 400 });
+		return json(
+			{ error: 'Validation failed', details: paramResult.error.flatten() },
+			{ status: 400 }
+		);
 	}
 
 	const { id } = paramResult.data;
@@ -50,7 +56,10 @@ export const PATCH: RequestHandler = async ({ params, request, locals }) => {
 
 	const bodyResult = updateChatSchema.safeParse(rawBody);
 	if (!bodyResult.success) {
-		return json({ error: 'Validation failed', details: bodyResult.error.flatten() }, { status: 400 });
+		return json(
+			{ error: 'Validation failed', details: bodyResult.error.flatten() },
+			{ status: 400 }
+		);
 	}
 
 	const { title, isPinned, isArchived } = bodyResult.data;
@@ -83,7 +92,10 @@ export const DELETE: RequestHandler = async ({ params, locals }) => {
 
 	const paramResult = chatIdParamSchema.safeParse(params);
 	if (!paramResult.success) {
-		return json({ error: 'Validation failed', details: paramResult.error.flatten() }, { status: 400 });
+		return json(
+			{ error: 'Validation failed', details: paramResult.error.flatten() },
+			{ status: 400 }
+		);
 	}
 
 	const { id } = paramResult.data;

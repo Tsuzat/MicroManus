@@ -67,7 +67,13 @@ export const actions: Actions = {
 				if (provider === 'custom' && baseUrl) {
 					await db
 						.delete(apiKeys)
-						.where(and(eq(apiKeys.userId, userId), eq(apiKeys.provider, provider), eq(apiKeys.baseUrl, baseUrl)));
+						.where(
+							and(
+								eq(apiKeys.userId, userId),
+								eq(apiKeys.provider, provider),
+								eq(apiKeys.baseUrl, baseUrl)
+							)
+						);
 				} else {
 					await db
 						.delete(apiKeys)
@@ -89,7 +95,13 @@ export const actions: Actions = {
 				[existing] = await db
 					.select()
 					.from(apiKeys)
-					.where(and(eq(apiKeys.userId, userId), eq(apiKeys.provider, provider), eq(apiKeys.baseUrl, baseUrl)))
+					.where(
+						and(
+							eq(apiKeys.userId, userId),
+							eq(apiKeys.provider, provider),
+							eq(apiKeys.baseUrl, baseUrl)
+						)
+					)
 					.limit(1);
 			} else {
 				[existing] = await db

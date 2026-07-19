@@ -97,6 +97,9 @@ export const messages = pgTable('messages', {
 	role: text('role').$type<'user' | 'assistant' | 'system' | 'tool'>().notNull(),
 	content: text('content').notNull(),
 	toolCalls: jsonb('tool_calls'),
+	sources: jsonb('sources'),
+	reasoning: text('reasoning'),
+	modelId: text('model_id'),
 	createdAt: timestamp('created_at').defaultNow().notNull()
 });
 

@@ -12,6 +12,10 @@
 	import RotateCcwIcon from '@lucide/svelte/icons/rotate-ccw';
 	import { toast } from 'svelte-sonner';
 	import FileIcon from '@lucide/svelte/icons/file';
+	import LightbulbIcon from '@lucide/svelte/icons/lightbulb';
+	import SearchIcon from '@lucide/svelte/icons/search';
+	import * as ChainOfThought from '$lib/components/ai-elements/chain-of-thought';
+	import SourceCitations from './source-citations.svelte';
 	import type { Component } from 'svelte';
 
 	interface Props {
@@ -21,9 +25,22 @@
 		modelId?: string;
 		messageId?: string;
 		onRewrite?: (messageId: string) => void;
+		sources?: Array<{ title: string; url: string; snippet: string }>;
+		reasoning?: string;
+		toolInvocations?: any[];
 	}
 
-	let { role, content, attachments = [], modelId, messageId, onRewrite }: Props = $props();
+	let {
+		role,
+		content,
+		attachments = [],
+		modelId,
+		messageId,
+		onRewrite,
+		sources = [],
+		reasoning,
+		toolInvocations = []
+	}: Props = $props();
 
 	let copied = $state(false);
 	let proseContainer: HTMLDivElement | undefined = $state();
@@ -90,9 +107,60 @@
 				<p class="whitespace-pre-wrap">{content}</p>
 			</div>
 		{:else}
+			{#if reasoning || (toolInvocations && toolInvocations.length > 0)}
+				<ChainOfThought.Root class="mb-3">
+					<ChainOfThought.Header />
+					<ChainOfThought.Content>
+						{#if reasoning}
+							<ChainOfThought.Step icon={LightbulbIcon} label="Thinking..." status="active">
+								<div
+									class="px-1 py-2 font-mono text-xs leading-relaxed whitespace-pre-wrap text-muted-foreground"
+								>
+									{reasoning}
+								</div>
+							</ChainOfThought.Step>
+						{/if}
+						{#if toolInvocations}
+							{#each toolInvocations as tool, idx (idx)}
+								{#if tool.toolName === 'webSearch'}
+									<ChainOfThought.Step
+										icon={SearchIcon}
+										label={`Searching for "${tool.args.query}"`}
+										status={tool.state === 'result' ? 'complete' : 'active'}
+									>
+										{#if tool.state === 'result' && tool.result && tool.result.results}
+											<ChainOfThought.SearchResults>
+												{#each tool.result.results as res (res.url)}
+													<ChainOfThought.SearchResult>
+														<a
+															href={res.url}
+															target="_blank"
+															rel="noopener noreferrer"
+															class="text-primary hover:underline"
+														>
+															{new URL(res.url).hostname}
+														</a>
+													</ChainOfThought.SearchResult>
+												{/each}
+											</ChainOfThought.SearchResults>
+										{:else if tool.state === 'result' && tool.result && tool.result.error}
+											<div class="text-xs text-destructive">{tool.result.error}</div>
+										{/if}
+									</ChainOfThought.Step>
+								{/if}
+							{/each}
+						{/if}
+					</ChainOfThought.Content>
+				</ChainOfThought.Root>
+			{/if}
+
 			<div bind:this={proseContainer} class="prose prose-sm dark:prose-invert max-w-none text-sm">
 				<Streamdown class="render-markdown" {content} components={{ code: Code, math: Math }} />
 			</div>
+
+			{#if sources && sources.length > 0}
+				<SourceCitations {sources} />
+			{/if}
 
 			<!-- Actions (visible on hover) -->
 			<div
@@ -156,11 +224,16 @@
 		<!-- Render Attachments -->
 		{#if attachments && attachments.length > 0}
 			<div class="mt-2 flex flex-wrap gap-2 {role === 'user' ? 'justify-end' : 'justify-start'}">
-				{#each attachments as attachment}
+				{#each attachments as attachment, idx (idx)}
 					{@const isImage = attachment.mediaType.startsWith('image/')}
 					{#if isImage}
 						<div class="relative overflow-hidden rounded-lg border bg-muted/25">
-							<a href={attachment.url} target="_blank" rel="noopener noreferrer" title="View full image">
+							<a
+								href={attachment.url}
+								target="_blank"
+								rel="noopener noreferrer"
+								title="View full image"
+							>
 								<img
 									src={attachment.url}
 									alt={attachment.filename || 'Image Attachment'}
@@ -172,13 +245,15 @@
 						<a
 							href={attachment.url}
 							download={attachment.filename || 'file'}
-							class="flex items-center gap-2 rounded-lg border bg-muted/40 px-3 py-2 text-xs text-foreground hover:bg-muted transition-colors max-w-[240px] min-w-[120px]"
+							class="flex max-w-[240px] min-w-[120px] items-center gap-2 rounded-lg border bg-muted/40 px-3 py-2 text-xs text-foreground transition-colors hover:bg-muted"
 							title="Download attachment"
 						>
 							<FileIcon class="size-4 shrink-0 text-muted-foreground" />
-							<div class="flex flex-col min-w-0">
+							<div class="flex min-w-0 flex-col">
 								<span class="truncate font-medium">{attachment.filename || 'Attachment'}</span>
-								<span class="text-[9px] text-muted-foreground uppercase">{attachment.mediaType.split('/')[1] || 'File'}</span>
+								<span class="text-[9px] text-muted-foreground uppercase"
+									>{attachment.mediaType.split('/')[1] || 'File'}</span
+								>
 							</div>
 						</a>
 					{/if}

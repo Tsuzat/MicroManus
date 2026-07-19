@@ -6,7 +6,7 @@
 	import { Chat } from '@ai-sdk/svelte';
 	import { DefaultChatTransport, type UIMessage } from 'ai';
 	import { DEFAULT_MODEL_ID } from '$lib/ai/providers';
-	import { ChatInput, MessageBubble } from '$lib/components/custom/chat';
+	import { ChatInput, MessageBubble, ChatExportButton } from '$lib/components/custom/chat';
 	import ArrowDownIcon from '@lucide/svelte/icons/arrow-down';
 	import { Button } from '$lib/components/ui/button';
 
@@ -53,7 +53,15 @@
 	 * Convert DB messages (role + content) to AI SDK UIMessage format.
 	 */
 	function convertDbMessagesToUIMessages(
-		dbMessages: Array<{ id: string; role: string; content: string; createdAt: Date }>
+		dbMessages: Array<{
+			id: string;
+			role: string;
+			content: string;
+			createdAt: Date;
+			reasoning?: string | null;
+			sources?: any;
+			modelId?: string | null;
+		}>
 	): UIMessage[] {
 		return dbMessages.map((msg) => {
 			let text = msg.content;
@@ -81,11 +89,10 @@
 			return {
 				id: msg.id,
 				role: msg.role as 'user' | 'assistant',
-				parts: [
-					{ type: 'text' as const, text },
-					...fileParts
-				],
-				createdAt: new Date(msg.createdAt)
+				parts: [{ type: 'text' as const, text }, ...fileParts],
+				createdAt: new Date(msg.createdAt),
+				reasoning: msg.reasoning || undefined,
+				annotations: msg.sources ? [{ type: 'sources', data: msg.sources }] : undefined
 			};
 		});
 	}
@@ -97,9 +104,12 @@
 		}
 	}
 
-	function handleSubmit(text: string, attachedFiles?: Array<{ name: string; type: string; url: string }>) {
+	function handleSubmit(
+		text: string,
+		attachedFiles?: Array<{ name: string; type: string; url: string }>
+	) {
 		if (attachedFiles && attachedFiles.length > 0) {
-			const files = attachedFiles.map(f => ({
+			const files = attachedFiles.map((f) => ({
 				type: 'file' as const,
 				mediaType: f.type,
 				url: f.url,
@@ -187,8 +197,11 @@
 
 <div class="flex h-full flex-col">
 	<!-- Header -->
-	<div class="flex items-center gap-2 p-4">
+	<div class="flex items-center justify-between border-b p-4 pb-2">
 		<h1 class="truncate text-sm font-medium">{chatTitle}</h1>
+		{#if data.chat}
+			<ChatExportButton chatId={data.chat.id} {chatTitle} />
+		{/if}
 	</div>
 
 	<!-- Messages area container -->
@@ -208,17 +221,30 @@
 				{:else}
 					{#each chat.messages as message (message.id)}
 						{@const textParts = message.parts?.filter((p) => p.type === 'text') ?? []}
-						{@const content = textParts.length > 0 ? textParts.map((p) => p.text).join('\n') : message.content}
-						{@const attachments = message.parts?.filter((p) => p.type === 'file').map((p: any) => ({
-							type: p.type,
-							mediaType: p.mediaType,
-							url: p.url,
-							filename: p.filename
-						})) ?? []}
+						{@const content =
+							textParts.length > 0 ? textParts.map((p) => p.text).join('\n') : message.content}
+						{@const attachments =
+							message.parts
+								?.filter((p) => p.type === 'file')
+								.map((p: any) => ({
+									type: p.type,
+									mediaType: p.mediaType,
+									url: p.url,
+									filename: p.filename
+								})) ?? []}
+						{@const reasoning = message.reasoning}
+						{@const toolInvocations = message.toolInvocations}
+						{@const sourcesAnnotation = message.annotations?.find(
+							(a) => (a as any).type === 'sources'
+						)}
+						{@const sources = sourcesAnnotation ? (sourcesAnnotation as any).data : []}
 						<MessageBubble
 							role={message.role as 'user' | 'assistant'}
 							{content}
 							{attachments}
+							{reasoning}
+							{toolInvocations}
+							{sources}
 							modelId={message.role === 'assistant' ? selectedModelId : undefined}
 							messageId={message.id}
 							onRewrite={(id) => chat.regenerate({ messageId: id })}

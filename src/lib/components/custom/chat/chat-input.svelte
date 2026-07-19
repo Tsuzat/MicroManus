@@ -40,12 +40,14 @@
 	let attachedFiles = $state<AttachedFile[]>([]);
 	let isDragging = $state(false);
 
-	const canSubmit = $derived((inputText.trim().length > 0 || attachedFiles.length > 0) && !isStreaming);
+	const canSubmit = $derived(
+		(inputText.trim().length > 0 || attachedFiles.length > 0) && !isStreaming
+	);
 
 	function handleSubmit() {
 		if (!canSubmit) return;
 		const text = inputText.trim();
-		const filesToSend = attachedFiles.map(f => ({
+		const filesToSend = attachedFiles.map((f) => ({
 			name: f.name,
 			type: f.type,
 			url: f.url
@@ -116,7 +118,7 @@
 	}
 
 	function handleRemoveFile(id: string) {
-		attachedFiles = attachedFiles.filter(f => f.id !== id);
+		attachedFiles = attachedFiles.filter((f) => f.id !== id);
 	}
 
 	// Paste handler (e.g. paste screenshots)
@@ -134,7 +136,7 @@
 		if (filesToProcess.length > 0) {
 			e.preventDefault();
 			const dataTransfer = new DataTransfer();
-			filesToProcess.forEach(f => dataTransfer.items.add(f));
+			filesToProcess.forEach((f) => dataTransfer.items.add(f));
 			processFiles(dataTransfer.files);
 		}
 	}
@@ -180,7 +182,9 @@
 	<!-- Drag and drop zone overlay style -->
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div
-		class="flex flex-col gap-2 rounded-2xl border bg-background p-2 shadow-sm transition-all {isDragging ? 'border-primary ring-2 ring-primary/20 bg-muted/20' : ''}"
+		class="flex flex-col gap-2 rounded-2xl border bg-background p-2 shadow-sm transition-all {isDragging
+			? 'border-primary bg-muted/20 ring-2 ring-primary/20'
+			: ''}"
 		ondragover={handleDragOver}
 		ondragleave={handleDragLeave}
 		ondrop={handleDrop}
@@ -207,14 +211,13 @@
 			rows={1}
 			disabled={isStreaming}
 			class="max-h-[200px] min-h-[44px] w-full resize-none bg-transparent px-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground disabled:opacity-50"
-			{...autofocus ? { autofocus: true } : {}}
-		></textarea>
+			{...autofocus ? { autofocus: true } : {}}></textarea>
 
 		<!-- Toolbar -->
 		<div class="flex items-center justify-between px-1">
 			<div class="flex items-center gap-1.5">
 				<ModelSelector {selectedModelId} onSelect={onModelSelect} disabled={isStreaming} />
-				
+
 				<!-- Paperclip Attachment button -->
 				<Button
 					variant="ghost"

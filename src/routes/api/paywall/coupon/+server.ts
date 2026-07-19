@@ -25,7 +25,10 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
 	const parseResult = couponSchema.safeParse(rawBody);
 	if (!parseResult.success) {
-		return json({ error: 'Validation failed', details: parseResult.error.flatten() }, { status: 400 });
+		return json(
+			{ error: 'Validation failed', details: parseResult.error.flatten() },
+			{ status: 400 }
+		);
 	}
 
 	const inputCode = parseResult.data.code;

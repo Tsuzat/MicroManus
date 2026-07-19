@@ -28,7 +28,8 @@
 			icon: LightbulbIcon,
 			title: 'Give me ideas',
 			description: 'for a weekend side project',
-			prompt: 'Give me creative ideas for a weekend side project that I can build to learn something new'
+			prompt:
+				'Give me creative ideas for a weekend side project that I can build to learn something new'
 		},
 		{
 			icon: SparklesIcon,
@@ -46,9 +47,7 @@
 			<AppLogo showLogo={false} size={3} />
 		</div>
 		<div class="text-center">
-			<h2 class="mt-0 pb-0 text-2xl font-semibold tracking-tight">
-				What can I help you with?
-			</h2>
+			<h2 class="mt-0 pb-0 text-2xl font-semibold tracking-tight">What can I help you with?</h2>
 			<p class="mt-2 text-sm text-muted-foreground">
 				Choose a suggestion below or type your own message
 			</p>

@@ -25,7 +25,10 @@
 		chatInputRef?.focus();
 	}
 
-	async function handleSubmit(text: string, files?: Array<{ name: string; type: string; url: string }>) {
+	async function handleSubmit(
+		text: string,
+		files?: Array<{ name: string; type: string; url: string }>
+	) {
 		// 1. Create a new chat
 		const newChat = await chatsContext.createChat();
 		if (!newChat) return;

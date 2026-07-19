@@ -65,7 +65,10 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
 	const parseResult = createChatSchema.safeParse(rawBody);
 	if (!parseResult.success) {
-		return json({ error: 'Validation failed', details: parseResult.error.flatten() }, { status: 400 });
+		return json(
+			{ error: 'Validation failed', details: parseResult.error.flatten() },
+			{ status: 400 }
+		);
 	}
 
 	const { title, isPinned } = parseResult.data;
