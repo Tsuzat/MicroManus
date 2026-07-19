@@ -6,7 +6,7 @@ FROM oven/bun:1-slim AS deps
 WORKDIR /app
 
 COPY package.json bun.lock ./
-RUN bun install --frozen-lockfile
+RUN bun install --frozen-lockfile --ignore-scripts
 
 # ============================================================================
 # Stage 2: Build the SvelteKit app
@@ -19,7 +19,7 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 # Build the SvelteKit app (svelte-adapter-bun outputs to /build)
-RUN bun run build
+RUN bun --bun run build
 
 # Prune dev dependencies — keep only production deps for the runtime image
 RUN bun install --frozen-lockfile --production --ignore-scripts
