@@ -8,7 +8,7 @@
 	import { BarSpinner } from '$lib/components/spell/bar-spinner';
 	import type { SocialProvider } from 'better-auth';
 
-	const redirectTo = $derived(page.url.searchParams.get('redirectTo') ?? '/');
+	const redirectTo = $derived(page.url.searchParams.get('redirectTo') ?? '/chat/new');
 
 	let loadingProvider = $state<string | null>(null);
 

@@ -18,8 +18,6 @@
 
 	let showFirstSection = $state(false);
 	let activeSection = $state('');
-	// import full_app_light from '$lib/assets/static/full_app_light.webp';
-	// import full_app_dark from '$lib/assets/static/full_app_dark.webp';
 	import {
 		Accordion,
 		AccordionContent,
@@ -344,7 +342,11 @@
 			and track every token — with full transparency and zero lock-in.
 		</p>
 		<div class="flex items-center justify-center gap-4">
-			<Button class="nodefault" href={resolve('/signin')}>Get Started</Button>
+			{#if user}
+				<Button class="nodefault" href={resolve('/(app)/chat/new')}>Start New Chat</Button>
+			{:else}
+				<Button class="nodefault" href={resolve('/signin')}>Get Started</Button>
+			{/if}
 			<Button class="nodefault" variant="outline" href="#features">See Features</Button>
 		</div>
 	</section>

@@ -62,9 +62,34 @@ export const auth = betterAuth({
 				}),
 				webhooks({
 					secret: POLAR_WEBHOOK_SECRET,
-					onCustomerStateChanged: (payload) => {}, // Triggered when anything regarding a customer changes
-					onOrderPaid: (payload) => {}, // Triggered when an order was paid (purchase, subscription renewal, etc.)
-					onPayload: (payload) => {} // Catch-all for all events
+					onOrderPaid: async (payload) => {
+						try {
+							// Extract userId from metadata or order payload if present
+							const data = payload?.data as any;
+							const userId =
+								data?.customer?.metadata?.userId || data?.metadata?.userId || data?.customer_id;
+							const email = data?.customer?.email || data?.customer_email;
+							if (userId) {
+								const { unlockUser } = await import('$lib/server/unlock');
+								await unlockUser(userId, 'payment');
+							} else if (email) {
+								const { db } = await import('$lib/server/db');
+								const { user } = await import('$lib/server/db/schema');
+								const { eq } = await import('drizzle-orm');
+								const [foundUser] = await db
+									.select()
+									.from(user)
+									.where(eq(user.email, email))
+									.limit(1);
+								if (foundUser) {
+									const { unlockUser } = await import('$lib/server/unlock');
+									await unlockUser(foundUser.id, 'payment');
+								}
+							}
+						} catch (err) {
+							console.error('[Polar Webhook onOrderPaid Error]', err);
+						}
+					}
 				})
 			]
 		}),
