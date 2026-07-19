@@ -88,11 +88,16 @@
 		return dbMessages.map((msg) => {
 			let text = msg.content;
 			let fileParts: any[] = [];
+			let toolInvocations: any[] | undefined = undefined;
 
 			if (msg.content.startsWith('{') && msg.content.endsWith('}')) {
 				try {
 					const parsed = JSON.parse(msg.content);
-					if (parsed && typeof parsed === 'object' && ('text' in parsed || 'files' in parsed)) {
+					if (
+						parsed &&
+						typeof parsed === 'object' &&
+						('text' in parsed || 'files' in parsed || 'toolInvocations' in parsed)
+					) {
 						text = parsed.text || '';
 						if (parsed.files && Array.isArray(parsed.files)) {
 							fileParts = parsed.files.map((f: any) => ({
@@ -101,6 +106,9 @@
 								url: f.url,
 								filename: f.filename
 							}));
+						}
+						if (parsed.toolInvocations && Array.isArray(parsed.toolInvocations)) {
+							toolInvocations = parsed.toolInvocations;
 						}
 					}
 				} catch {
@@ -114,7 +122,8 @@
 				parts: [{ type: 'text' as const, text }, ...fileParts],
 				createdAt: new Date(msg.createdAt),
 				reasoning: msg.reasoning || undefined,
-				annotations: msg.sources ? [{ type: 'sources', data: msg.sources }] : undefined
+				annotations: msg.sources ? [{ type: 'sources', data: msg.sources }] : undefined,
+				toolInvocations
 			};
 		});
 	}
@@ -257,7 +266,16 @@
 						{@const reasoningParts = message.parts?.filter((p) => p.type === 'reasoning') ?? []}
 						{@const reasoning =
 							reasoningParts.length > 0
-								? reasoningParts.map((p: any) => p.reasoning || p.text).join('\n')
+								? reasoningParts
+										.map((p: any) => {
+											if (p.reasoning || p.text) return p.reasoning || p.text;
+											if (p.providerMetadata?.openai?.reasoningEncryptedContent) {
+												return '_(Reasoning content is encrypted and hidden by the provider)_';
+											}
+											return '';
+										})
+										.filter(Boolean)
+										.join('\n')
 								: message.reasoning}
 
 						{@const toolInvocationParts =
@@ -295,7 +313,7 @@
 
 					{#if chat.status === 'streaming' || chat.status === 'submitted'}
 						<div class="flex items-center gap-2 py-4">
-							<Shimmer content_length={11}>Thinking...</Shimmer>
+							<Shimmer class="text-sm" content_length={11}>Thinking...</Shimmer>
 						</div>
 					{/if}
 				{/if}

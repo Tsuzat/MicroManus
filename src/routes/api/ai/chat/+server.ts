@@ -55,6 +55,12 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		providerOptions = {
 			anthropic: { thinking: { type: 'enabled', budgetTokens: 10000 } }
 		};
+	} else if (modelConfig?.provider === 'openai') {
+		providerOptions = {
+			openai: {
+				reasoningSummary: 'auto'
+			}
+		};
 	}
 
 	// --- Agent with webSearch tool always available ---
@@ -97,15 +103,33 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 					await db.insert(messagesTable).values({ chatId, role: 'user', content: contentPayload });
 				}
 
-				// 2. Extract sources from webSearch tool results
+				// 2. Extract tool invocations and sources
+				const toolInvocations =
+					toolResults?.map((tr: any) => ({
+						state: 'result',
+						toolCallId: tr.toolCallId,
+						toolName: tr.toolName,
+						args: tr.args || tr.input || {},
+						result: tr.result || tr.output || {}
+					})) || [];
+
 				const sources: any[] = [];
-				if (toolResults?.length) {
-					for (const tr of toolResults) {
-						if (tr.toolName === 'webSearch' && (tr as any).result?.results) {
-							sources.push(...(tr as any).result.results);
-						}
+				for (const t of toolInvocations) {
+					if (t.toolName === 'webSearch' && t.result?.results) {
+						sources.push(...t.result.results);
 					}
 				}
+
+				// Handle encrypted reasoning for o1/o3-mini
+				let finalReasoning = reasoningText || null;
+				if (!finalReasoning && (modelId.includes('o1') || modelId.includes('o3-mini'))) {
+					finalReasoning = '_(Reasoning content is encrypted and hidden by the provider)_';
+				}
+
+				const assistantContentPayload =
+					toolInvocations.length > 0
+						? JSON.stringify({ text, toolInvocations })
+						: text;
 
 				// 3. Persist assistant message
 				const [assistantMsg] = await db
@@ -113,8 +137,8 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 					.values({
 						chatId,
 						role: 'assistant',
-						content: text,
-						reasoning: reasoningText || null,
+						content: assistantContentPayload,
+						reasoning: finalReasoning,
 						sources: sources.length > 0 ? sources : null,
 						modelId
 					})
