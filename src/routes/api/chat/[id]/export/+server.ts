@@ -63,8 +63,7 @@ export const GET: RequestHandler = async ({ params, locals, url }) => {
 		minute: '2-digit'
 	});
 
-	const safeTitle = chat
-		.title
+	const safeTitle = chat.title
 		.replace(/[^a-z0-9 ]/gi, '_')
 		.replace(/\s+/g, '_')
 		.toLowerCase();
@@ -131,12 +130,12 @@ export const GET: RequestHandler = async ({ params, locals, url }) => {
 			const html = await renderChatToHTML(chat.title, exportDate, chatMessages);
 
 			// Launch headless chromium
-			const browser = await chromium.launch({ 
+			const browser = await chromium.launch({
 				headless: true,
-				args: ['--no-sandbox', '--disable-setuid-sandbox'] 
+				args: ['--no-sandbox', '--disable-setuid-sandbox']
 			});
 			const page = await browser.newPage();
-			
+
 			// Load the HTML content
 			await page.setContent(html, { waitUntil: 'networkidle' });
 
@@ -170,7 +169,9 @@ export const GET: RequestHandler = async ({ params, locals, url }) => {
 			});
 		} catch (error) {
 			console.error('PDF Generation Error:', error);
-			return new Response('Failed to generate PDF. Make sure Playwright Chromium is installed.', { status: 500 });
+			return new Response('Failed to generate PDF. Make sure Playwright Chromium is installed.', {
+				status: 500
+			});
 		}
 	}
 

@@ -117,6 +117,9 @@ export const usageEvents = pgTable('usage_events', {
 	outputTokens: integer('output_tokens').default(0).notNull(),
 	cacheReadTokens: integer('cache_read_tokens').default(0),
 	cacheWriteTokens: integer('cache_write_tokens').default(0),
+	inputCostUsd: numeric('input_cost_usd', { precision: 12, scale: 6 }),
+	outputCostUsd: numeric('output_cost_usd', { precision: 12, scale: 6 }),
+	cacheCostUsd: numeric('cache_cost_usd', { precision: 12, scale: 6 }),
 	costUsd: numeric('cost_usd', { precision: 12, scale: 6 }),
 	createdAt: timestamp('created_at').defaultNow().notNull()
 });

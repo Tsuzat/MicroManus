@@ -1,7 +1,7 @@
 import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
-import { chats, messages } from '$lib/server/db/schema';
+import { chats, messages, usageEvents } from '$lib/server/db/schema';
 import { eq, and, asc } from 'drizzle-orm';
 
 export const load: PageServerLoad = async ({ params, locals: { user } }) => {
@@ -22,12 +22,21 @@ export const load: PageServerLoad = async ({ params, locals: { user } }) => {
 		return redirect(302, '/chat/new');
 	}
 
-	// Load messages
-	const chatMessages = await db
-		.select()
+	// Load messages with their usage events
+	const results = await db
+		.select({
+			message: messages,
+			usage: usageEvents
+		})
 		.from(messages)
+		.leftJoin(usageEvents, eq(messages.id, usageEvents.messageId))
 		.where(eq(messages.chatId, id))
 		.orderBy(asc(messages.createdAt));
+
+	const chatMessages = results.map((r) => ({
+		...r.message,
+		usage: r.usage
+	}));
 
 	return {
 		chat,

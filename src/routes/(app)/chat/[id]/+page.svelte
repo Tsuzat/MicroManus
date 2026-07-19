@@ -63,6 +63,7 @@
 			reasoning?: string | null;
 			sources?: any;
 			modelId?: string | null;
+			usage?: any;
 		}>
 	): UIMessage[] {
 		return dbMessages.map((msg) => {
@@ -103,8 +104,9 @@
 				createdAt: new Date(msg.createdAt),
 				reasoning: msg.reasoning || undefined,
 				annotations: msg.sources ? [{ type: 'sources', data: msg.sources }] : undefined,
-				toolInvocations
-			};
+				toolInvocations,
+				usage: msg.usage
+			} as UIMessage & { usage?: any };
 		});
 	}
 
@@ -290,6 +292,7 @@
 								{reasoning}
 								{toolInvocations}
 								{sources}
+								usage={message.usage}
 								modelId={message.role === 'assistant' ? selectedModelId : undefined}
 								messageId={message.id}
 								isStreaming={chat.status === 'streaming' &&

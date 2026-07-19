@@ -202,6 +202,9 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 						outputTokens,
 						cacheReadTokens: cachedTokens,
 						cacheWriteTokens: cachedOutputTokens,
+						inputCostUsd: inputCost.toFixed(6),
+						outputCostUsd: outputCost.toFixed(6),
+						cacheCostUsd: cacheCost.toFixed(6),
 						costUsd: (inputCost + cacheCost + outputCost).toFixed(6)
 					});
 				}

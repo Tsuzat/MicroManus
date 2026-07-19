@@ -107,12 +107,12 @@ export const GET: RequestHandler = async ({ params, locals, url }) => {
 		try {
 			const html = await renderChatToHTML(chatTitle, exportDate, [msg]);
 
-			const browser = await chromium.launch({ 
+			const browser = await chromium.launch({
 				headless: true,
-				args: ['--no-sandbox', '--disable-setuid-sandbox'] 
+				args: ['--no-sandbox', '--disable-setuid-sandbox']
 			});
 			const page = await browser.newPage();
-			
+
 			await page.setContent(html, { waitUntil: 'networkidle' });
 
 			const pdfBuffer = await page.pdf({
@@ -139,7 +139,9 @@ export const GET: RequestHandler = async ({ params, locals, url }) => {
 			});
 		} catch (error) {
 			console.error('PDF Generation Error:', error);
-			return new Response('Failed to generate PDF. Make sure Playwright Chromium is installed.', { status: 500 });
+			return new Response('Failed to generate PDF. Make sure Playwright Chromium is installed.', {
+				status: 500
+			});
 		}
 	}
 

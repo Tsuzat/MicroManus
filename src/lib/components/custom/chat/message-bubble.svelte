@@ -14,7 +14,9 @@
 	import FileIcon from '@lucide/svelte/icons/file';
 	import LightbulbIcon from '@lucide/svelte/icons/lightbulb';
 	import SearchIcon from '@lucide/svelte/icons/search';
+	import BarChartIcon from '@lucide/svelte/icons/bar-chart-2';
 	import * as ChainOfThought from '$lib/components/ai-elements/chain-of-thought';
+	import * as Dialog from '$lib/components/ui/dialog';
 	import SourceCitations from './source-citations.svelte';
 	import type { Component } from 'svelte';
 
@@ -29,6 +31,16 @@
 		reasoning?: string;
 		toolInvocations?: any[];
 		isStreaming?: boolean;
+		usage?: {
+			inputTokens: number;
+			outputTokens: number;
+			cacheReadTokens: number;
+			cacheWriteTokens: number;
+			inputCostUsd: string | null;
+			outputCostUsd: string | null;
+			cacheCostUsd: string | null;
+			costUsd: string | null;
+		};
 	}
 
 	let {
@@ -41,11 +53,13 @@
 		sources = [],
 		reasoning,
 		toolInvocations = [],
-		isStreaming = false
+		isStreaming = false,
+		usage
 	}: Props = $props();
 
 	let copied = $state(false);
 	let proseContainer: HTMLDivElement | undefined = $state();
+	let showAnalytics = $state(false);
 
 	const allSources = $derived.by(() => {
 		if (sources && sources.length > 0) return sources;
@@ -260,6 +274,19 @@
 								<RotateCcwIcon />
 							</Button>
 						{/if}
+
+						<!-- Analytics Button -->
+						{#if usage}
+							<Button
+								variant="ghost"
+								size="icon"
+								class="size-8 text-muted-foreground hover:bg-muted hover:text-foreground"
+								onclick={() => (showAnalytics = true)}
+								title="Message Analytics & Cost"
+							>
+								<BarChartIcon />
+							</Button>
+						{/if}
 					</div>
 				</div>
 			{/if}
@@ -307,3 +334,63 @@
 		{/if}
 	</div>
 </div>
+
+<Dialog.Root bind:open={showAnalytics}>
+	<Dialog.Content class="sm:max-w-md">
+		<Dialog.Header>
+			<Dialog.Title>Message Analytics</Dialog.Title>
+			<Dialog.Description>Cost and token distribution for this AI response.</Dialog.Description>
+		</Dialog.Header>
+
+		{#if usage}
+			<div class="space-y-4 py-4 text-sm">
+				<div class="grid grid-cols-2 gap-4">
+					<div class="space-y-1">
+						<p class="text-sm leading-none font-medium text-muted-foreground">Model</p>
+						<p>{model?.label || modelId}</p>
+					</div>
+					<div class="space-y-1">
+						<p class="text-sm leading-none font-medium text-muted-foreground">Total Cost</p>
+						<p class="font-bold">${usage.costUsd || '0.000000'}</p>
+					</div>
+				</div>
+
+				<div class="rounded-md border p-4">
+					<p class="mb-3 text-sm font-medium text-muted-foreground">Token Usage</p>
+					<div class="grid grid-cols-3 gap-4">
+						<div class="flex flex-col gap-1">
+							<span class="text-xs text-muted-foreground">Input</span>
+							<span class="font-medium">{usage.inputTokens}</span>
+						</div>
+						<div class="flex flex-col gap-1">
+							<span class="text-xs text-muted-foreground">Cached</span>
+							<span class="font-medium">{usage.cacheReadTokens + usage.cacheWriteTokens}</span>
+						</div>
+						<div class="flex flex-col gap-1">
+							<span class="text-xs text-muted-foreground">Output</span>
+							<span class="font-medium">{usage.outputTokens}</span>
+						</div>
+					</div>
+				</div>
+
+				<div class="rounded-md border p-4">
+					<p class="mb-3 text-sm font-medium text-muted-foreground">Cost Breakdown</p>
+					<div class="space-y-2">
+						<div class="flex justify-between">
+							<span class="text-muted-foreground">Input Cost</span>
+							<span>${usage.inputCostUsd || '0.000000'}</span>
+						</div>
+						<div class="flex justify-between">
+							<span class="text-muted-foreground">Cache Cost</span>
+							<span>${usage.cacheCostUsd || '0.000000'}</span>
+						</div>
+						<div class="flex justify-between">
+							<span class="text-muted-foreground">Output Cost</span>
+							<span>${usage.outputCostUsd || '0.000000'}</span>
+						</div>
+					</div>
+				</div>
+			</div>
+		{/if}
+	</Dialog.Content>
+</Dialog.Root>

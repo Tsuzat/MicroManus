@@ -5,12 +5,16 @@ import { getModelConfig } from '$lib/ai/providers';
  * Returns a complete, beautifully styled HTML document for the chat export.
  * This HTML is designed to be rendered by Playwright to a PDF.
  */
-export async function renderChatToHTML(chatTitle: string, exportDate: string, messages: any[]): Promise<string> {
+export async function renderChatToHTML(
+	chatTitle: string,
+	exportDate: string,
+	messages: any[]
+): Promise<string> {
 	let messagesHtml = '';
 
 	for (const msg of messages) {
 		const isUser = msg.role === 'user';
-		
+
 		// Use marked to parse the markdown content
 		let rawContent = msg.content;
 		if (rawContent.startsWith('{') && rawContent.endsWith('}')) {
@@ -25,8 +29,8 @@ export async function renderChatToHTML(chatTitle: string, exportDate: string, me
 		}
 		const contentHtml = await marked.parse(rawContent);
 
-		const roleName = isUser 
-			? 'YOU' 
+		const roleName = isUser
+			? 'YOU'
 			: msg.modelId
 				? (getModelConfig(msg.modelId)?.label?.toUpperCase() ?? msg.modelId.toUpperCase())
 				: 'ASSISTANT';

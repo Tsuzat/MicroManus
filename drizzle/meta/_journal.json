@@ -36,6 +36,13 @@
       "when": 1784471837927,
       "tag": "0004_big_hellfire_club",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1784492113326,
+      "tag": "0005_romantic_titanium_man",
+      "breakpoints": true
     }
   ]
 }
