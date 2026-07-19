@@ -177,8 +177,6 @@
 					</div>
 				</div>
 
-
-
 				<!-- Kimi Key Card -->
 				<div class="rounded-xl border bg-card p-5 shadow-sm">
 					<div class="flex items-center gap-3 pb-4">

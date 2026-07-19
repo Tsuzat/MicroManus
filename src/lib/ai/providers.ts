@@ -82,7 +82,6 @@ export const MODELS: ModelConfig[] = [
 		pricing: { inputPerMTok: 1, outputPerMTok: 5, cachedInputPerMTok: 0.1 }
 	},
 
-
 	// --- Kimi (Moonshot): K3 / K2.7 Code ---
 	{
 		id: 'kimi-k3',

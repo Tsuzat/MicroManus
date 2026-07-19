@@ -123,9 +123,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 				}
 
 				const assistantContentPayload =
-					toolInvocations.length > 0
-						? JSON.stringify({ text, toolInvocations })
-						: text;
+					toolInvocations.length > 0 ? JSON.stringify({ text, toolInvocations }) : text;
 
 				// 3. Persist assistant message
 				const [assistantMsg] = await db

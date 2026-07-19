@@ -187,60 +187,60 @@
 				<div class="flex flex-wrap items-center gap-2 pt-1">
 					<!-- Action Buttons (Copy, Download, Regenerate) -->
 					<div class="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-					<!-- Copy Button -->
-					<Button
-						variant="ghost"
-						size="icon"
-						class="size-8 text-muted-foreground hover:bg-muted hover:text-foreground"
-						onclick={copyContent}
-						title="Copy Response"
-					>
-						{#if copied}
-							<CheckIcon class="text-emerald-500" />
-						{:else}
-							<CopyIcon />
-						{/if}
-					</Button>
-
-					<!-- Download Dropdown -->
-					<DropdownMenu.Root>
-						<DropdownMenu.Trigger>
-							{#snippet child({ props })}
-								<Button
-									variant="ghost"
-									size="icon"
-									class="size-8 text-muted-foreground hover:bg-muted hover:text-foreground"
-									{...props}
-									title="Download Options"
-								>
-									<DownloadIcon />
-								</Button>
-							{/snippet}
-						</DropdownMenu.Trigger>
-						<DropdownMenu.Content align="center" class="w-36">
-							<DropdownMenu.Item onclick={downloadAsMarkdown}>
-								<span>Markdown (.md)</span>
-							</DropdownMenu.Item>
-							<DropdownMenu.Item onclick={downloadAsPDF}>
-								<span>PDF (.pdf)</span>
-							</DropdownMenu.Item>
-						</DropdownMenu.Content>
-					</DropdownMenu.Root>
-
-					<!-- Rewrite Button -->
-					{#if messageId && onRewrite}
+						<!-- Copy Button -->
 						<Button
 							variant="ghost"
 							size="icon"
 							class="size-8 text-muted-foreground hover:bg-muted hover:text-foreground"
-							onclick={() => onRewrite(messageId)}
-							title="Regenerate Response"
+							onclick={copyContent}
+							title="Copy Response"
 						>
-							<RotateCcwIcon />
+							{#if copied}
+								<CheckIcon class="text-emerald-500" />
+							{:else}
+								<CopyIcon />
+							{/if}
 						</Button>
-					{/if}
+
+						<!-- Download Dropdown -->
+						<DropdownMenu.Root>
+							<DropdownMenu.Trigger>
+								{#snippet child({ props })}
+									<Button
+										variant="ghost"
+										size="icon"
+										class="size-8 text-muted-foreground hover:bg-muted hover:text-foreground"
+										{...props}
+										title="Download Options"
+									>
+										<DownloadIcon />
+									</Button>
+								{/snippet}
+							</DropdownMenu.Trigger>
+							<DropdownMenu.Content align="center" class="w-36">
+								<DropdownMenu.Item onclick={downloadAsMarkdown}>
+									<span>Markdown (.md)</span>
+								</DropdownMenu.Item>
+								<DropdownMenu.Item onclick={downloadAsPDF}>
+									<span>PDF (.pdf)</span>
+								</DropdownMenu.Item>
+							</DropdownMenu.Content>
+						</DropdownMenu.Root>
+
+						<!-- Rewrite Button -->
+						{#if messageId && onRewrite}
+							<Button
+								variant="ghost"
+								size="icon"
+								class="size-8 text-muted-foreground hover:bg-muted hover:text-foreground"
+								onclick={() => onRewrite(messageId)}
+								title="Regenerate Response"
+							>
+								<RotateCcwIcon />
+							</Button>
+						{/if}
+					</div>
 				</div>
-			</div>
 			{/if}
 		{/if}
 
