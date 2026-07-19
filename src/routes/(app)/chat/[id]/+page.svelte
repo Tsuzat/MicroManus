@@ -177,6 +177,8 @@
 							role={message.role as 'user' | 'assistant'}
 							{content}
 							modelId={message.role === 'assistant' ? selectedModelId : undefined}
+							messageId={message.id}
+							onRewrite={(id) => chat.regenerate({ messageId: id })}
 						/>
 					{/each}
 

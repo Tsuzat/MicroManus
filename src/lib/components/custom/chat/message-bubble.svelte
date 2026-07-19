@@ -1,21 +1,26 @@
 <script lang="ts">
-	import * as Avatar from '$lib/components/ui/avatar';
 	import { getModelConfig, type AIProvider } from '$lib/ai/providers';
 	import { OpenAIIcon, GeminiIcon, AnthropicIcon, KimiIcon } from '$lib/components/custom/icons';
+	import { Button } from '$lib/components/ui/button';
 	import { Streamdown } from 'svelte-streamdown';
 	import Code from 'svelte-streamdown/code';
 	import Math from 'svelte-streamdown/math';
 	import CopyIcon from '@lucide/svelte/icons/copy';
 	import CheckIcon from '@lucide/svelte/icons/check';
+	import DownloadIcon from '@lucide/svelte/icons/download';
+	import RotateCcwIcon from '@lucide/svelte/icons/rotate-ccw';
+	import { toast } from 'svelte-sonner';
 	import type { Component } from 'svelte';
 
 	interface Props {
 		role: 'user' | 'assistant' | 'system';
 		content: string;
 		modelId?: string;
+		messageId?: string;
+		onRewrite?: (messageId: string) => void;
 	}
 
-	let { role, content, modelId }: Props = $props();
+	let { role, content, modelId, messageId, onRewrite }: Props = $props();
 
 	let copied = $state(false);
 
@@ -35,8 +40,26 @@
 			setTimeout(() => {
 				copied = false;
 			}, 2000);
+			toast.success('Response copied to clipboard');
 		} catch {
-			// Silently fail
+			toast.error('Failed to copy text');
+		}
+	}
+
+	function downloadContent() {
+		try {
+			const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+			const url = URL.createObjectURL(blob);
+			const a = document.createElement('a');
+			a.href = url;
+			a.download = `ai-response-${messageId || 'msg'}.txt`;
+			document.body.appendChild(a);
+			a.click();
+			document.body.removeChild(a);
+			URL.revokeObjectURL(url);
+			toast.success('Response downloaded as text file');
+		} catch {
+			toast.error('Failed to download text');
 		}
 	}
 </script>
@@ -66,19 +89,34 @@
 			</div>
 
 			<!-- Actions (visible on hover) -->
-			<div class="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-				<button
-					onclick={copyContent}
-					class="flex items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-				>
+			<div
+				class="flex items-center gap-1 pt-1 opacity-0 transition-opacity group-hover:opacity-100"
+			>
+				<!-- Copy Button -->
+				<Button variant="ghost" size="icon-sm" onclick={copyContent} title="Copy Response">
 					{#if copied}
-						<CheckIcon class="size-3" />
-						<span>Copied</span>
+						<CheckIcon class="text-emerald-500" />
 					{:else}
-						<CopyIcon class="size-3" />
-						<span>Copy</span>
+						<CopyIcon />
 					{/if}
-				</button>
+				</Button>
+
+				<!-- Download Button -->
+				<Button variant="ghost" size="icon-sm" onclick={downloadContent} title="Download as Text">
+					<DownloadIcon />
+				</Button>
+
+				<!-- Rewrite Button -->
+				{#if messageId && onRewrite}
+					<Button
+						variant="ghost"
+						size="icon-sm"
+						onclick={() => onRewrite(messageId)}
+						title="Regenerate Response"
+					>
+						<RotateCcwIcon />
+					</Button>
+				{/if}
 			</div>
 		{/if}
 	</div>
