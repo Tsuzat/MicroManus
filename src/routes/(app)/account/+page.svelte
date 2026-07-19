@@ -138,7 +138,10 @@
 
 <svelte:head>
 	<title>My Account — MicroManus</title>
-	<meta name="description" content="Manage your user profile, active sessions, and available credits on MicroManus" />
+	<meta
+		name="description"
+		content="Manage your user profile, active sessions, and available credits on MicroManus"
+	/>
 </svelte:head>
 
 <div class="flex h-full flex-col">
@@ -159,10 +162,10 @@
 				<div class="h-24 bg-gradient-to-r from-primary/20 via-primary/5 to-secondary/20"></div>
 				<Card.Content class="relative pt-0">
 					<!-- Profile Photo Container -->
-					<div class="flex flex-col sm:flex-row sm:items-end gap-4 -mt-10 px-2 pb-6">
+					<div class="-mt-10 flex flex-col gap-4 px-2 pb-6 sm:flex-row sm:items-end">
 						<Avatar.Root class="size-20 rounded-2xl border-4 border-background shadow-md">
 							<Avatar.Image src={data.user.image ?? ''} alt={data.user.name} />
-							<Avatar.Fallback class="rounded-xl text-xl font-bold bg-muted">
+							<Avatar.Fallback class="rounded-xl bg-muted text-xl font-bold">
 								{getInitials(data.user.name ?? 'User')}
 							</Avatar.Fallback>
 						</Avatar.Root>
@@ -170,15 +173,18 @@
 							<div class="flex flex-wrap items-center gap-2">
 								<h2 class="m-0 pb-0 text-xl font-bold tracking-tight">{data.user.name}</h2>
 								{#if data.unlockStatus?.unlocked}
-									<Badge variant="default" class="bg-amber-500 hover:bg-amber-500/90 text-white font-medium flex gap-1 items-center">
+									<Badge
+										variant="default"
+										class="flex items-center gap-1 bg-amber-500 font-medium text-white hover:bg-amber-500/90"
+									>
 										<SparklesIcon class="size-3" />
 										Pro Tier
 									</Badge>
 								{:else}
-									<Badge variant="secondary" class="font-medium text-xs">Free Tier</Badge>
+									<Badge variant="secondary" class="text-xs font-medium">Free Tier</Badge>
 								{/if}
 							</div>
-							<p class="text-sm text-muted-foreground flex items-center gap-1.5">
+							<p class="flex items-center gap-1.5 text-sm text-muted-foreground">
 								<MailIcon class="size-4 shrink-0" />
 								{data.user.email}
 							</p>
@@ -188,11 +194,11 @@
 					<Separator />
 
 					<!-- Profile Details List -->
-					<div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-6 text-sm">
+					<div class="grid grid-cols-1 gap-4 pt-6 text-sm md:grid-cols-2">
 						<div class="flex items-center gap-3 rounded-lg border bg-muted/30 p-3">
 							<CalendarIcon class="size-5 text-muted-foreground" />
 							<div>
-								<p class="text-xs text-muted-foreground font-medium">Joined On</p>
+								<p class="text-xs font-medium text-muted-foreground">Joined On</p>
 								<p class="font-semibold text-foreground">{formatDate(data.user.createdAt)}</p>
 							</div>
 						</div>
@@ -201,13 +207,13 @@
 							{#if data.user.emailVerified}
 								<ShieldCheckIcon class="size-5 text-emerald-500" />
 								<div>
-									<p class="text-xs text-muted-foreground font-medium">Email Verification</p>
+									<p class="text-xs font-medium text-muted-foreground">Email Verification</p>
 									<p class="font-semibold text-emerald-500">Verified</p>
 								</div>
 							{:else}
 								<ShieldAlertIcon class="size-5 text-amber-500" />
 								<div>
-									<p class="text-xs text-muted-foreground font-medium">Email Verification</p>
+									<p class="text-xs font-medium text-muted-foreground">Email Verification</p>
 									<p class="font-semibold text-amber-500">Unverified</p>
 								</div>
 							{/if}
@@ -215,11 +221,15 @@
 
 						{#if data.unlockStatus?.unlocked}
 							<div class="flex items-center gap-3 rounded-lg border bg-muted/30 p-3 md:col-span-2">
-								<SparklesIcon class="size-5 text-amber-500 animate-pulse" />
+								<SparklesIcon class="size-5 animate-pulse text-amber-500" />
 								<div>
-									<p class="text-xs text-muted-foreground font-medium">Subscription Unlock Method</p>
+									<p class="text-xs font-medium text-muted-foreground">
+										Subscription Unlock Method
+									</p>
 									<p class="font-semibold text-foreground">
-										Unlocked via {data.unlockStatus.method === 'payment' ? 'Payment' : 'Coupon Code'} 
+										Unlocked via {data.unlockStatus.method === 'payment'
+											? 'Payment'
+											: 'Coupon Code'}
 										{#if data.unlockStatus.unlockedAt}
 											on {formatDate(data.unlockStatus.unlockedAt)}
 										{/if}
@@ -234,8 +244,10 @@
 			<!-- Section 2: Credits & Spend Dashboard -->
 			<div class="space-y-4">
 				<div class="flex items-center justify-between">
-					<h3 class="m-0 text-md font-semibold tracking-tight">Credits & Usage</h3>
-					<Badge variant="outline" class="font-normal text-xs text-muted-foreground">Updated in real-time</Badge>
+					<h3 class="text-md m-0 font-semibold tracking-tight">Credits & Usage</h3>
+					<Badge variant="outline" class="text-xs font-normal text-muted-foreground"
+						>Updated in real-time</Badge
+					>
 				</div>
 
 				<div class="grid gap-4 sm:grid-cols-3">
@@ -248,7 +260,7 @@
 							<div class="text-3xl font-bold tracking-tight text-amber-500">
 								{data.credits.balance}
 							</div>
-							<p class="text-xs text-muted-foreground mt-1">Ready for custom generations</p>
+							<p class="mt-1 text-xs text-muted-foreground">Ready for custom generations</p>
 						</Card.Content>
 					</Card.Root>
 
@@ -261,7 +273,7 @@
 							<div class="text-3xl font-bold tracking-tight">
 								${data.credits.totalCost.toFixed(4)}
 							</div>
-							<p class="text-xs text-muted-foreground mt-1">All-time API spend</p>
+							<p class="mt-1 text-xs text-muted-foreground">All-time API spend</p>
 						</Card.Content>
 					</Card.Root>
 
@@ -271,11 +283,15 @@
 							<CpuIcon class="size-4 text-muted-foreground" />
 						</Card.Header>
 						<Card.Content>
-							<div class="text-2xl font-bold tracking-tight truncate">
-								{new Intl.NumberFormat().format(data.credits.totalInputTokens + data.credits.totalOutputTokens)}
+							<div class="truncate text-2xl font-bold tracking-tight">
+								{new Intl.NumberFormat().format(
+									data.credits.totalInputTokens + data.credits.totalOutputTokens
+								)}
 							</div>
-							<p class="text-xs text-muted-foreground mt-1 font-mono text-[10px]">
-								{new Intl.NumberFormat().format(data.credits.totalInputTokens)} IN / {new Intl.NumberFormat().format(data.credits.totalOutputTokens)} OUT
+							<p class="mt-1 font-mono text-xs text-[10px] text-muted-foreground">
+								{new Intl.NumberFormat().format(data.credits.totalInputTokens)} IN / {new Intl.NumberFormat().format(
+									data.credits.totalOutputTokens
+								)} OUT
 							</p>
 						</Card.Content>
 					</Card.Root>
@@ -285,39 +301,44 @@
 				<Card.Root>
 					<Card.Header class="pb-3">
 						<Card.Title class="text-sm font-semibold">Credit Transaction History</Card.Title>
-						<Card.Description class="text-xs">Recent modifications to your credit ledger balance</Card.Description>
+						<Card.Description class="text-xs"
+							>Recent modifications to your credit ledger balance</Card.Description
+						>
 					</Card.Header>
 					<Card.Content class="p-0">
 						<div class="overflow-x-auto">
-							<table class="w-full text-sm border-t">
+							<table class="w-full border-t text-sm">
 								<thead>
-									<tr class="bg-muted/40 text-muted-foreground text-xs border-b">
-										<th class="py-2.5 px-4 text-left font-medium">Reason</th>
-										<th class="py-2.5 px-4 text-right font-medium">Change</th>
-										<th class="py-2.5 px-4 text-right font-medium">Date</th>
+									<tr class="border-b bg-muted/40 text-xs text-muted-foreground">
+										<th class="px-4 py-2.5 text-left font-medium">Reason</th>
+										<th class="px-4 py-2.5 text-right font-medium">Change</th>
+										<th class="px-4 py-2.5 text-right font-medium">Date</th>
 									</tr>
 								</thead>
 								<tbody class="divide-y divide-border">
 									{#if data.creditsHistory.length === 0}
 										<tr>
-											<td colspan="3" class="py-6 text-center text-muted-foreground text-xs italic">
+											<td colspan="3" class="py-6 text-center text-xs text-muted-foreground italic">
 												No credit transactions recorded yet
 											</td>
 										</tr>
 									{:else}
 										{#each data.creditsHistory as item (item.id)}
-											<tr class="hover:bg-muted/10 transition-colors">
-												<td class="py-2.5 px-4 font-medium text-xs">{item.reason || 'Manual Update'}</td>
-												<td class="py-2.5 px-4 text-right font-mono text-xs font-semibold">
+											<tr class="transition-colors hover:bg-muted/10">
+												<td class="px-4 py-2.5 text-xs font-medium"
+													>{item.reason || 'Manual Update'}</td
+												>
+												<td class="px-4 py-2.5 text-right font-mono text-xs font-semibold">
 													{#if item.delta > 0}
-														<span class="text-emerald-600 dark:text-emerald-500">+{item.delta}</span>
+														<span class="text-emerald-600 dark:text-emerald-500">+{item.delta}</span
+														>
 													{:else if item.delta < 0}
 														<span class="text-destructive">{item.delta}</span>
 													{:else}
 														<span class="text-muted-foreground">0</span>
 													{/if}
 												</td>
-												<td class="py-2.5 px-4 text-right text-muted-foreground text-xs font-mono">
+												<td class="px-4 py-2.5 text-right font-mono text-xs text-muted-foreground">
 													{formatDate(item.createdAt)}
 												</td>
 											</tr>
@@ -332,13 +353,13 @@
 
 			<!-- Section 3: Active Sessions -->
 			<div class="space-y-4">
-				<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+				<div class="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
 					<div>
-						<h3 class="m-0 text-md font-semibold tracking-tight">Active Sessions</h3>
+						<h3 class="text-md m-0 font-semibold tracking-tight">Active Sessions</h3>
 						<p class="text-xs text-muted-foreground">Devices currently logged into your account</p>
 					</div>
 					{#if sessions.length > 1}
-						<Button variant="outline" size="sm" onclick={handleRevokeOthers} class="text-xs h-8">
+						<Button variant="outline" size="sm" onclick={handleRevokeOthers} class="h-8 text-xs">
 							Log Out Other Devices
 						</Button>
 					{/if}
@@ -348,20 +369,23 @@
 					{#if loadingSessions}
 						<div class="space-y-3">
 							{#each Array(2) as _}
-								<div class="h-20 rounded-xl border bg-card animate-pulse"></div>
+								<div class="h-20 animate-pulse rounded-xl border bg-card"></div>
 							{/each}
 						</div>
 					{:else if sessions.length === 0}
 						<Card.Root>
-							<Card.Content class="py-8 text-center text-muted-foreground text-sm italic">
+							<Card.Content class="py-8 text-center text-sm text-muted-foreground italic">
 								Could not retrieve active sessions
 							</Card.Content>
 						</Card.Root>
 					{:else}
 						{#each sessions as session (session.id)}
 							{@const parsed = parseUserAgent(session.userAgent)}
-							{@const isCurrent = session.token === data.sessionToken || session.id === data.sessionToken}
-							<div class="flex items-center justify-between rounded-xl border bg-card p-4 shadow-sm transition-all hover:shadow-md">
+							{@const isCurrent =
+								session.token === data.sessionToken || session.id === data.sessionToken}
+							<div
+								class="flex items-center justify-between rounded-xl border bg-card p-4 shadow-sm transition-all hover:shadow-md"
+							>
 								<div class="flex items-center gap-3">
 									<div class="rounded-lg bg-primary/10 p-2 text-primary">
 										<svelte:component this={parsed.deviceIcon} class="size-5" />
@@ -370,15 +394,24 @@
 										<div class="flex items-center gap-2">
 											<span class="text-sm font-semibold">{parsed.device}</span>
 											<span class="text-xs text-muted-foreground">•</span>
-											<span class="text-xs font-medium text-muted-foreground">{parsed.browser}</span>
+											<span class="text-xs font-medium text-muted-foreground">{parsed.browser}</span
+											>
 											{#if isCurrent}
-												<Badge variant="default" class="text-[10px] h-4 px-1.5 bg-primary font-medium">This Device</Badge>
+												<Badge
+													variant="default"
+													class="h-4 bg-primary px-1.5 text-[10px] font-medium">This Device</Badge
+												>
 											{/if}
 										</div>
-										<p class="text-xs text-muted-foreground flex flex-wrap gap-x-2 gap-y-0.5">
-											<span>IP: <code class="font-mono">{session.ipAddress || 'Unknown'}</code></span>
+										<p class="flex flex-wrap gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
+											<span
+												>IP: <code class="font-mono">{session.ipAddress || 'Unknown'}</code></span
+											>
 											<span>•</span>
-											<span>Created: {formatDate(session.createdAt)} {formatTime(session.createdAt)}</span>
+											<span
+												>Created: {formatDate(session.createdAt)}
+												{formatTime(session.createdAt)}</span
+											>
 										</p>
 									</div>
 								</div>
@@ -389,7 +422,7 @@
 										size="icon"
 										onclick={() => handleRevoke(session.token)}
 										title="Revoke session"
-										class="size-8 text-destructive hover:bg-destructive/10 hover:text-destructive shrink-0"
+										class="size-8 shrink-0 text-destructive hover:bg-destructive/10 hover:text-destructive"
 									>
 										<Trash2Icon class="size-4" />
 									</Button>
@@ -403,19 +436,23 @@
 			<!-- Section 4: Danger Zone -->
 			<Card.Root class="border-destructive/30 bg-destructive/[0.02]">
 				<Card.Header class="pb-3">
-					<Card.Title class="text-sm font-semibold text-destructive flex items-center gap-2">
+					<Card.Title class="flex items-center gap-2 text-sm font-semibold text-destructive">
 						<LogOutIcon class="size-4" />
 						Danger Zone
 					</Card.Title>
-					<Card.Description class="text-xs">Manage your session authentication state and account</Card.Description>
+					<Card.Description class="text-xs"
+						>Manage your session authentication state and account</Card.Description
+					>
 				</Card.Header>
 				<Card.Content>
-					<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+					<div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
 						<div class="space-y-0.5">
 							<p class="text-sm font-medium text-foreground">Sign Out of MicroManus</p>
-							<p class="text-xs text-muted-foreground">Properly end your authentication session on this browser.</p>
+							<p class="text-xs text-muted-foreground">
+								Properly end your authentication session on this browser.
+							</p>
 						</div>
-						<Button href="/signout" variant="destructive" class="w-full sm:w-auto font-medium">
+						<Button href="/signout" variant="destructive" class="w-full font-medium sm:w-auto">
 							Sign Out
 						</Button>
 					</div>

@@ -8,6 +8,7 @@
 	import Sparkles from '@lucide/svelte/icons/sparkles';
 	import ArrowRight from '@lucide/svelte/icons/arrow-right';
 	import Coins from '@lucide/svelte/icons/coins';
+	import { resolve } from '$app/paths';
 
 	const { data } = $props();
 
@@ -19,7 +20,7 @@
 				countdown -= 1;
 			} else {
 				clearInterval(timer);
-				goto('/chat/new');
+				goto(resolve('/(app)/chat/new'));
 			}
 		}, 1000);
 
@@ -92,7 +93,7 @@
 
 			<Card.Footer class="pt-2">
 				<Button
-					onclick={() => goto('/chat/new')}
+					onclick={() => goto(resolve('/(app)/chat/new'))}
 					class="w-full gap-2 font-semibold shadow-lg"
 					size="lg"
 				>
