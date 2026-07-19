@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { getModelConfig, type AIProvider } from '$lib/ai/providers';
-	import { OpenAIIcon, GeminiIcon, AnthropicIcon, KimiIcon } from '$lib/components/custom/icons';
+	import { OpenAIIcon, AnthropicIcon, KimiIcon } from '$lib/components/custom/icons';
 	import { Button } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { Streamdown } from 'svelte-streamdown';
@@ -45,14 +45,6 @@
 	let copied = $state(false);
 	let proseContainer: HTMLDivElement | undefined = $state();
 
-	function getHostname(url: string) {
-		try {
-			return new URL(url).hostname;
-		} catch {
-			return url;
-		}
-	}
-
 	const allSources = $derived.by(() => {
 		if (sources && sources.length > 0) return sources;
 		if (toolInvocations && toolInvocations.length > 0) {
@@ -71,7 +63,6 @@
 	const providerIcons: Record<AIProvider, Component> = {
 		openai: OpenAIIcon,
 		anthropic: AnthropicIcon,
-		google: GeminiIcon,
 		kimi: KimiIcon
 	};
 

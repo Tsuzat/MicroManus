@@ -1,7 +1,7 @@
 // AI Provider & Model Registry
 // Central configuration for all supported LLM providers and models
 
-export type AIProvider = 'openai' | 'anthropic' | 'google' | 'kimi';
+export type AIProvider = 'openai' | 'anthropic' | 'kimi';
 
 export interface ModelConfig {
 	id: string; // wire-format model ID sent to the API
@@ -18,7 +18,6 @@ export interface ModelConfig {
 export const PROVIDERS: Record<AIProvider, { label: string }> = {
 	openai: { label: 'OpenAI' },
 	anthropic: { label: 'Claude' },
-	google: { label: 'Gemini' },
 	kimi: { label: 'Kimi' }
 };
 
@@ -83,28 +82,6 @@ export const MODELS: ModelConfig[] = [
 		pricing: { inputPerMTok: 1, outputPerMTok: 5, cachedInputPerMTok: 0.1 }
 	},
 
-	// --- Google: Gemini 3.1 Pro / 3.5 Flash ---
-	{
-		id: 'gemini-2.5-flash-lite',
-		label: 'Gemini 2.5 Flash Lite',
-		provider: 'google',
-		contextWindow: 1_000_000,
-		pricing: { inputPerMTok: 0.25, outputPerMTok: 2.0 }
-	},
-	{
-		id: 'gemini-3.1-pro',
-		label: 'Gemini 3.1 Pro',
-		provider: 'google',
-		contextWindow: 1_000_000,
-		pricing: { inputPerMTok: 2, outputPerMTok: 12, cachedInputPerMTok: 0.2 }
-	},
-	{
-		id: 'gemini-3.5-flash',
-		label: 'Gemini 3.5 Flash',
-		provider: 'google',
-		contextWindow: 1_000_000,
-		pricing: { inputPerMTok: 0.3, outputPerMTok: 2.5 }
-	},
 
 	// --- Kimi (Moonshot): K3 / K2.7 Code ---
 	{

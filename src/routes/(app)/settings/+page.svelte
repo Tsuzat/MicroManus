@@ -8,7 +8,7 @@
 	import EyeIcon from '@lucide/svelte/icons/eye';
 	import EyeOffIcon from '@lucide/svelte/icons/eye-off';
 	import Trash2Icon from '@lucide/svelte/icons/trash-2';
-	import { OpenAIIcon, GoogleIcon, AnthropicIcon, KimiIcon } from '$lib/components/custom/icons';
+	import { OpenAIIcon, AnthropicIcon, KimiIcon } from '$lib/components/custom/icons';
 
 	const { data, form } = $props();
 
@@ -18,7 +18,6 @@
 	let showKeys = $state({
 		openai: false,
 		anthropic: false,
-		google: false,
 		kimi: false
 	});
 
@@ -26,7 +25,6 @@
 	let keys = $derived({
 		openai: data.keys.openai?.masked || '',
 		anthropic: data.keys.anthropic?.masked || '',
-		google: data.keys.google?.masked || '',
 		kimi: data.keys.kimi?.masked || ''
 	});
 
@@ -39,7 +37,7 @@
 		}
 	});
 
-	function clearKey(provider: 'openai' | 'anthropic' | 'google' | 'kimi') {
+	function clearKey(provider: 'openai' | 'anthropic' | 'kimi') {
 		keys[provider] = '';
 		toast.success(`Cleared ${provider} key (save to apply changes)`);
 	}
@@ -179,53 +177,7 @@
 					</div>
 				</div>
 
-				<!-- Google Key Card -->
-				<div class="rounded-xl border bg-card p-5 shadow-sm">
-					<div class="flex items-center gap-3 pb-4">
-						<div class="rounded-lg bg-blue-500/10 p-2 text-blue-500">
-							<GoogleIcon class="size-5" />
-						</div>
-						<div>
-							<h3 class="mt-0 text-sm leading-none font-semibold">Google AI (Gemini)</h3>
-							<p class="mt-1 text-xs text-muted-foreground">
-								Used for Gemini 3.1 Pro and Gemini 3.5 Flash models.
-							</p>
-						</div>
-					</div>
 
-					<div class="flex items-center gap-2">
-						<div class="relative flex-1">
-							<Input
-								type={showKeys.google ? 'text' : 'password'}
-								name="google"
-								placeholder="Enter Google AI API Key"
-								bind:value={keys.google}
-								class="pr-10 font-mono text-xs"
-							/>
-							<button
-								type="button"
-								onclick={() => (showKeys.google = !showKeys.google)}
-								class="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-							>
-								{#if showKeys.google}
-									<EyeOffIcon class="size-4" />
-								{:else}
-									<EyeIcon class="size-4" />
-								{/if}
-							</button>
-						</div>
-						<Button
-							type="button"
-							variant="outline"
-							size="icon"
-							onclick={() => clearKey('google')}
-							disabled={!keys.google}
-							title="Clear Key"
-						>
-							<Trash2Icon class="size-4" />
-						</Button>
-					</div>
-				</div>
 
 				<!-- Kimi Key Card -->
 				<div class="rounded-xl border bg-card p-5 shadow-sm">

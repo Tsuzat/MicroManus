@@ -3,7 +3,6 @@
 
 import { createOpenAI } from '@ai-sdk/openai';
 import { createAnthropic } from '@ai-sdk/anthropic';
-import { createGoogle } from '@ai-sdk/google';
 import { getModelConfig } from '$lib/ai/providers';
 import type { LanguageModel } from 'ai';
 import { db } from '$lib/server/db';
@@ -64,9 +63,7 @@ export async function resolveModel(modelId: string, userId: string): Promise<Lan
 				? 'OpenAI'
 				: config.provider === 'anthropic'
 					? 'Anthropic (Claude)'
-					: config.provider === 'google'
-						? 'Google AI (Gemini)'
-						: 'Kimi (Moonshot)';
+					: 'Kimi (Moonshot)';
 		throw new Error(
 			`Please configure your ${providerName} API Key in the Settings page to use this model.`
 		);
@@ -85,12 +82,7 @@ export async function resolveModel(modelId: string, userId: string): Promise<Lan
 			});
 			return anthropic(config.id);
 		}
-		case 'google': {
-			const google = createGoogle({
-				apiKey: userKey
-			});
-			return google(config.id);
-		}
+
 		case 'kimi': {
 			// Kimi uses an OpenAI-compatible API
 			const kimi = createOpenAI({

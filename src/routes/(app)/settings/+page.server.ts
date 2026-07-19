@@ -16,7 +16,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 	// Group keys by provider or base_url for display
 	const openaiKey = keys.find((k) => k.provider === 'openai');
 	const anthropicKey = keys.find((k) => k.provider === 'anthropic');
-	const googleKey = keys.find((k) => k.provider === 'google');
+
 	const kimiKey = keys.find((k) => k.provider === 'custom' && k.baseUrl?.includes('moonshot'));
 
 	const maskKey = (encrypted: string) => {
@@ -35,7 +35,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 			anthropic: anthropicKey
 				? { id: anthropicKey.id, masked: maskKey(anthropicKey.encryptedKey) }
 				: null,
-			google: googleKey ? { id: googleKey.id, masked: maskKey(googleKey.encryptedKey) } : null,
+
 			kimi: kimiKey ? { id: kimiKey.id, masked: maskKey(kimiKey.encryptedKey) } : null
 		}
 	};
@@ -50,13 +50,13 @@ export const actions: Actions = {
 		const data = await request.formData();
 		const openai = data.get('openai') as string;
 		const anthropic = data.get('anthropic') as string;
-		const google = data.get('google') as string;
+
 		const kimi = data.get('kimi') as string;
 
 		const userId = locals.user.id;
 
 		const saveKey = async (
-			provider: 'openai' | 'anthropic' | 'google' | 'custom',
+			provider: 'openai' | 'anthropic' | 'custom',
 			value: string,
 			baseUrl?: string,
 			label?: string
@@ -135,7 +135,7 @@ export const actions: Actions = {
 		try {
 			await saveKey('openai', openai);
 			await saveKey('anthropic', anthropic);
-			await saveKey('google', google);
+
 			await saveKey('custom', kimi, 'https://api.moonshot.cn/v1', 'Kimi');
 
 			return { success: true, message: 'API keys updated successfully' };
