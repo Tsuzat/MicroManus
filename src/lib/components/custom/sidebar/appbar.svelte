@@ -37,7 +37,7 @@
 	const isNewChatActive = $derived(page.url.pathname.includes('/chat/new'));
 </script>
 
-<Sidebar.Root variant="inset" class="bg-muted dark:bg-muted/20" collapsible="icon">
+<Sidebar.Root variant="inset" collapsible="icon" id="sidebar-main">
 	<Sidebar.Header>
 		<Sidebar.Menu>
 			<Sidebar.MenuItem class="flex items-center justify-between">

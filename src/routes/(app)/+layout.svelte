@@ -7,16 +7,33 @@
 	const { data, children } = $props();
 	const chatsContext = setChatsContext();
 
+	let open = $state(false);
+
 	onMount(() => {
 		chatsContext.init(data.chats, data.hasMore);
+		if (localStorage.getItem('sidebar:state') === 'true') {
+			open = true;
+		} else {
+			open = false;
+		}
 	});
 </script>
 
 <ConfirmDeleteDialog />
 
-<Sidebar.Provider>
+<Sidebar.Provider
+	class="h-screen w-screen bg-muted/10!"
+	id="sidebar-wrapper"
+	{open}
+	onOpenChange={(op) => {
+		localStorage.setItem('sidebar:state', op.toString());
+	}}
+>
 	<AppSidebar user={data.user} />
-	<Sidebar.Inset>
+	<Sidebar.Inset class="overflow-hidden rounded-xl border p-0.5">
 		{@render children()}
 	</Sidebar.Inset>
+	<!-- <Sidebar.Inset>
+		{@render children()}
+	</Sidebar.Inset> -->
 </Sidebar.Provider>
