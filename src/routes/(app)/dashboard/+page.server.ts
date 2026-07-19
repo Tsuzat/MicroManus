@@ -53,6 +53,9 @@ export const load: PageServerLoad = async ({ locals }) => {
 			outputTokens: usageEvents.outputTokens,
 			cacheReadTokens: usageEvents.cacheReadTokens,
 			cacheWriteTokens: usageEvents.cacheWriteTokens,
+			inputCostUsd: usageEvents.inputCostUsd,
+			outputCostUsd: usageEvents.outputCostUsd,
+			cacheCostUsd: usageEvents.cacheCostUsd,
 			createdAt: usageEvents.createdAt
 		})
 		.from(usageEvents)
@@ -76,6 +79,9 @@ export const load: PageServerLoad = async ({ locals }) => {
 				inputTokens: 0,
 				outputTokens: 0,
 				cacheTokens: 0,
+				inputCostUsd: 0,
+				outputCostUsd: 0,
+				cacheCostUsd: 0,
 				models: new Set()
 			});
 		}
@@ -85,6 +91,9 @@ export const load: PageServerLoad = async ({ locals }) => {
 		chatEntry.inputTokens += usage.inputTokens || 0;
 		chatEntry.outputTokens += usage.outputTokens || 0;
 		chatEntry.cacheTokens += (usage.cacheReadTokens || 0) + (usage.cacheWriteTokens || 0);
+		chatEntry.inputCostUsd += Number(usage.inputCostUsd || 0);
+		chatEntry.outputCostUsd += Number(usage.outputCostUsd || 0);
+		chatEntry.cacheCostUsd += Number(usage.cacheCostUsd || 0);
 		chatEntry.models.add(getModelConfig(usage.model)?.label || usage.model);
 
 		// Model map
@@ -114,6 +123,9 @@ export const load: PageServerLoad = async ({ locals }) => {
 				inputTokens: usage?.inputTokens || 0,
 				outputTokens: usage?.outputTokens || 0,
 				cacheTokens: usage?.cacheTokens || 0,
+				inputCostUsd: usage?.inputCostUsd || 0,
+				outputCostUsd: usage?.outputCostUsd || 0,
+				cacheCostUsd: usage?.cacheCostUsd || 0,
 				models: Array.from(usage?.models || [])
 			};
 		})

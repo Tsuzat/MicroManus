@@ -15,9 +15,7 @@
 	import PlusIcon from '@lucide/svelte/icons/plus';
 	import SearchIcon from '@lucide/svelte/icons/search';
 	import BadgeCheckIcon from '@lucide/svelte/icons/badge-check';
-	import BellIcon from '@lucide/svelte/icons/bell';
 	import ChevronsUpDownIcon from '@lucide/svelte/icons/chevrons-up-down';
-	import CreditCardIcon from '@lucide/svelte/icons/credit-card';
 	import LogOutIcon from '@lucide/svelte/icons/log-out';
 	import PinIcon from '@lucide/svelte/icons/pin';
 	import ChevronDownIcon from '@lucide/svelte/icons/chevron-down';
@@ -129,7 +127,7 @@
 			<Sidebar.GroupLabel class="flex items-center gap-1.5">
 				<span>Recent Chats</span>
 			</Sidebar.GroupLabel>
-			<Sidebar.Menu>
+			<Sidebar.Menu class="gap-0.5">
 				{#if chatsContext && chatsContext.otherChats.length > 0}
 					{#each chatsContext.otherChats as chat (chat.id)}
 						<ChatTile {chat} />

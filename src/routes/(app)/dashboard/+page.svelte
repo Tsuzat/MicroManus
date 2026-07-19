@@ -1,10 +1,13 @@
 <script lang="ts">
 	import * as Card from '$lib/components/ui/card';
 	import * as Sidebar from '$lib/components/ui/sidebar';
+	import * as Dialog from '$lib/components/ui/popover';
+	import { Button } from '$lib/components/ui/button';
 	import ActivityIcon from '@lucide/svelte/icons/activity';
 	import CoinsIcon from '@lucide/svelte/icons/coins';
 	import MessageSquareIcon from '@lucide/svelte/icons/message-square';
 	import CpuIcon from '@lucide/svelte/icons/cpu';
+	import InfoIcon from '@lucide/svelte/icons/info';
 	import { resolve } from '$app/paths';
 
 	const { data } = $props();
@@ -195,10 +198,68 @@
 														>
 													</div>
 												</td>
-												<td
-													class="p-4 text-right align-middle font-mono text-xs text-muted-foreground"
-												>
-													${chat.costUsd.toFixed(4)}
+												<td class="p-4 text-right align-middle">
+													<div class="flex items-center justify-end gap-1">
+														<span class="font-mono text-xs text-muted-foreground"
+															>${chat.costUsd.toFixed(4)}</span
+														>
+														<Dialog.Root>
+															<Dialog.Trigger>
+																{#snippet child({ props })}
+																	<Button
+																		variant="ghost"
+																		size="icon-sm"
+																		{...props}
+																		title="View Cost Breakdown"
+																	>
+																		<InfoIcon class="text-muted-foreground" />
+																	</Button>
+																{/snippet}
+															</Dialog.Trigger>
+															<Dialog.Content class="sm:max-w-md">
+																<Dialog.Header>
+																	<Dialog.Title>Cost Breakdown</Dialog.Title>
+																	<Dialog.Description
+																		>Detailed wholesale cost for {chat.title ||
+																			'Untitled Chat'}.</Dialog.Description
+																	>
+																</Dialog.Header>
+																<div class="text-sm">
+																	<div class="rounded-md border p-4">
+																		<p class="mb-3 text-sm font-medium text-muted-foreground">
+																			Cost Distribution
+																		</p>
+																		<div class="space-y-2">
+																			<div class="flex justify-between">
+																				<span class="text-muted-foreground">Input Cost</span>
+																				<span class="font-mono"
+																					>${chat.inputCostUsd.toFixed(6)}</span
+																				>
+																			</div>
+																			<div class="flex justify-between">
+																				<span class="text-muted-foreground">Cache Cost</span>
+																				<span class="font-mono"
+																					>${chat.cacheCostUsd.toFixed(6)}</span
+																				>
+																			</div>
+																			<div class="flex justify-between">
+																				<span class="text-muted-foreground">Output Cost</span>
+																				<span class="font-mono"
+																					>${chat.outputCostUsd.toFixed(6)}</span
+																				>
+																			</div>
+																			<div
+																				class="mt-2 flex justify-between border-t pt-2 font-bold"
+																			>
+																				<span>Total</span>
+																				<span class="font-mono">${chat.costUsd.toFixed(6)}</span>
+																			</div>
+																		</div>
+																	</div>
+																</div>
+															</Dialog.Content>
+														</Dialog.Root>
+													</div>
 												</td>
 											</tr>
 										{/each}
