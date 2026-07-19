@@ -1,13 +1,17 @@
 import type { Chat } from '$lib/server/db/schema';
 import { getContext, setContext } from 'svelte';
+import { SvelteSet } from 'svelte/reactivity';
 import { toast } from 'svelte-sonner';
 
 export class Chats {
 	#chats = $state<Chat[]>([]);
 	#loading = $state(false);
+	#hasMore = $state(false);
+	#loadingMore = $state(false);
 
-	constructor(chats: Chat[] = []) {
+	constructor(chats: Chat[] = [], hasMore = false) {
 		this.#chats = chats;
+		this.#hasMore = hasMore;
 	}
 
 	get chats() {
@@ -22,6 +26,18 @@ export class Chats {
 		return this.#loading;
 	}
 
+	get hasMore() {
+		return this.#hasMore;
+	}
+
+	set hasMore(val: boolean) {
+		this.#hasMore = val;
+	}
+
+	get loadingMore() {
+		return this.#loadingMore;
+	}
+
 	get pinnedChats() {
 		return this.#chats.filter((c) => c.isPinned && !c.isArchived);
 	}
@@ -31,21 +47,57 @@ export class Chats {
 	}
 
 	/**
+	 * Re-hydrates chats state and pagination flags
+	 */
+	init(initialChats: Chat[], hasMore = false) {
+		this.#chats = initialChats;
+		this.#hasMore = hasMore;
+	}
+
+	/**
 	 * Fetches all chats from GET /api/chat
 	 */
 	async fetchChats() {
 		try {
 			this.#loading = true;
-			const res = await fetch('/api/chat');
+			const res = await fetch('/api/chat?type=all&limit=50');
 			if (!res.ok) throw new Error('Failed to fetch chats');
 			const data = await res.json();
 			if (data.chats) {
 				this.#chats = data.chats;
+				this.#hasMore = Boolean(data.hasMore);
 			}
 		} catch (err) {
 			console.error('[Chats] fetchChats error:', err);
 		} finally {
 			this.#loading = false;
+		}
+	}
+
+	/**
+	 * Loads next batch of recent non-pinned chats
+	 */
+	async loadMore() {
+		if (this.#loadingMore || !this.#hasMore) return;
+
+		try {
+			this.#loadingMore = true;
+			const currentRecentCount = this.otherChats.length;
+			const res = await fetch(`/api/chat?type=recent&limit=10&offset=${currentRecentCount}`);
+			if (!res.ok) throw new Error('Failed to load more chats');
+
+			const data = await res.json();
+			if (data.chats && data.chats.length > 0) {
+				const existingIds = new SvelteSet(this.#chats.map((c) => c.id));
+				const newUnique = data.chats.filter((c: Chat) => !existingIds.has(c.id));
+				this.#chats = [...this.#chats, ...newUnique];
+			}
+			this.#hasMore = Boolean(data.hasMore);
+		} catch (err) {
+			console.error('[Chats] loadMore error:', err);
+			toast.error('Failed to load more chats');
+		} finally {
+			this.#loadingMore = false;
 		}
 	}
 
@@ -132,7 +184,11 @@ export class Chats {
 		} catch (err) {
 			console.error('[Chats] deleteChat error:', err);
 			// Rollback on error
-			this.#chats = [...this.#chats.slice(0, targetIndex), deletedChat, ...this.#chats.slice(targetIndex)];
+			this.#chats = [
+				...this.#chats.slice(0, targetIndex),
+				deletedChat,
+				...this.#chats.slice(targetIndex)
+			];
 			toast.error('Failed to delete chat');
 		}
 	}
@@ -182,8 +238,8 @@ export class Chats {
 
 const CHATS_KEY = Symbol('CHATS_KEY');
 
-export const setChatsContext = (chats: Chat[] = []) => {
-	return setContext(CHATS_KEY, new Chats(chats));
+export const setChatsContext = (chats: Chat[] = [], hasMore = false) => {
+	return setContext(CHATS_KEY, new Chats(chats, hasMore));
 };
 
 export const useChatsContext = () => {

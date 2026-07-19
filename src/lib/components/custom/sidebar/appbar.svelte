@@ -9,6 +9,7 @@
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import * as Sidebar from '$lib/components/ui/sidebar';
 	import { useSidebar } from '$lib/components/ui/sidebar';
+	import { BarSpinner } from '$lib/components/spell/bar-spinner';
 
 	import LayoutDashboardIcon from '@lucide/svelte/icons/layout-dashboard';
 	import PlusIcon from '@lucide/svelte/icons/plus';
@@ -19,6 +20,7 @@
 	import CreditCardIcon from '@lucide/svelte/icons/credit-card';
 	import LogOutIcon from '@lucide/svelte/icons/log-out';
 	import PinIcon from '@lucide/svelte/icons/pin';
+	import ChevronDownIcon from '@lucide/svelte/icons/chevron-down';
 
 	interface Props {
 		user?: {
@@ -134,6 +136,24 @@
 					{#each chatsContext.otherChats as chat (chat.id)}
 						<ChatTile {chat} />
 					{/each}
+
+					{#if chatsContext.hasMore}
+						<Sidebar.MenuItem>
+							<Sidebar.MenuButton
+								onclick={() => chatsContext.loadMore()}
+								disabled={chatsContext.loadingMore}
+								class="text-xs text-muted-foreground transition-colors hover:text-foreground"
+							>
+								{#if chatsContext.loadingMore}
+									<BarSpinner />
+									<span>Loading...</span>
+								{:else}
+									<ChevronDownIcon class="size-3.5" />
+									<span>Load more chats</span>
+								{/if}
+							</Sidebar.MenuButton>
+						</Sidebar.MenuItem>
+					{/if}
 				{:else}
 					<Sidebar.MenuItem class="px-2 py-1.5 text-xs text-muted-foreground italic">
 						No chats yet

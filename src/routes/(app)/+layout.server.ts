@@ -1,7 +1,9 @@
 import { redirect } from '@sveltejs/kit';
 import type { LayoutServerLoad } from './$types';
 import { isUserUnlocked } from '$lib/server/unlock';
-import type { Chat } from '$lib/server/db/schema';
+import { db } from '$lib/server/db';
+import { chats } from '$lib/server/db/schema';
+import { eq, and, desc } from 'drizzle-orm';
 
 export const load: LayoutServerLoad = async ({ locals: { user, session } }) => {
 	if (!user) {
@@ -13,54 +15,29 @@ export const load: LayoutServerLoad = async ({ locals: { user, session } }) => {
 		return redirect(302, '/paywall');
 	}
 
-	// 5 dummy chats for UI testing
-	const dummyChats: Chat[] = [
-		{
-			id: '1',
-			userId: user.id,
-			title: 'AI Agent Architecture Plan',
-			isPinned: true,
-			isArchived: false,
-			createdAt: new Date(),
-			updatedAt: new Date()
-		},
-		{
-			id: '2',
-			userId: user.id,
-			title: 'Next.js 15 Migration & Best Practices',
-			isPinned: true,
-			isArchived: false,
-			createdAt: new Date(),
-			updatedAt: new Date()
-		},
-		{
-			id: '3',
-			userId: user.id,
-			title: 'Tailwind v4 Setup Guidance',
-			isPinned: false,
-			isArchived: false,
-			createdAt: new Date(),
-			updatedAt: new Date()
-		},
-		{
-			id: '4',
-			userId: user.id,
-			title: 'Drizzle ORM Schema Optimization',
-			isPinned: false,
-			isArchived: false,
-			createdAt: new Date(),
-			updatedAt: new Date()
-		},
-		{
-			id: '5',
-			userId: user.id,
-			title: 'Polar Payment Integration Notes',
-			isPinned: false,
-			isArchived: false,
-			createdAt: new Date(),
-			updatedAt: new Date()
-		}
-	];
+	// 1. Fetch top 5 pinned chats
+	const pinnedChats = await db
+		.select()
+		.from(chats)
+		.where(and(eq(chats.userId, user.id), eq(chats.isPinned, true), eq(chats.isArchived, false)))
+		.orderBy(desc(chats.updatedAt))
+		.limit(5);
 
-	return { user, session, chats: dummyChats };
+	// 2. Fetch top 11 recent non-pinned chats (fetching 11 to check hasMore)
+	const recentChatsRaw = await db
+		.select()
+		.from(chats)
+		.where(and(eq(chats.userId, user.id), eq(chats.isPinned, false), eq(chats.isArchived, false)))
+		.orderBy(desc(chats.updatedAt))
+		.limit(11);
+
+	const hasMore = recentChatsRaw.length > 10;
+	const recentChats = recentChatsRaw.slice(0, 10);
+
+	return {
+		user,
+		session,
+		chats: [...pinnedChats, ...recentChats],
+		hasMore
+	};
 };

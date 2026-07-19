@@ -3,15 +3,12 @@
 	import * as Sidebar from '$lib/components/ui/sidebar';
 	import AppSidebar from '$lib/components/custom/sidebar/appbar.svelte';
 	import { ConfirmDeleteDialog } from '$lib/components/custom';
-
+	import { onMount } from 'svelte';
 	const { data, children } = $props();
-
 	const chatsContext = setChatsContext();
 
-	$effect(() => {
-		if (data.chats) {
-			chatsContext.chats = data.chats;
-		}
+	onMount(() => {
+		chatsContext.init(data.chats, data.hasMore);
 	});
 </script>
 

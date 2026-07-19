@@ -1,21 +1,54 @@
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
 import { chats } from '$lib/server/db/schema';
-import { eq, desc } from 'drizzle-orm';
+import { eq, and, desc } from 'drizzle-orm';
 import { createChatSchema } from '$lib/schemas/chat';
 
-export const GET: RequestHandler = async ({ locals }) => {
+export const GET: RequestHandler = async ({ url, locals }) => {
 	if (!locals.user) {
 		return json({ error: 'Unauthorized' }, { status: 401 });
 	}
 
-	const userChats = await db
+	const limitParam = parseInt(url.searchParams.get('limit') || '10', 10);
+	const offsetParam = parseInt(url.searchParams.get('offset') || '0', 10);
+	const typeParam = url.searchParams.get('type') || 'recent';
+
+	const limit = Math.min(Math.max(isNaN(limitParam) ? 10 : limitParam, 1), 50);
+	const offset = Math.max(isNaN(offsetParam) ? 0 : offsetParam, 0);
+
+	let whereClause;
+	if (typeParam === 'pinned') {
+		whereClause = and(
+			eq(chats.userId, locals.user.id),
+			eq(chats.isPinned, true),
+			eq(chats.isArchived, false)
+		);
+	} else if (typeParam === 'recent') {
+		whereClause = and(
+			eq(chats.userId, locals.user.id),
+			eq(chats.isPinned, false),
+			eq(chats.isArchived, false)
+		);
+	} else {
+		whereClause = and(eq(chats.userId, locals.user.id), eq(chats.isArchived, false));
+	}
+
+	const rawChats = await db
 		.select()
 		.from(chats)
-		.where(eq(chats.userId, locals.user.id))
-		.orderBy(desc(chats.updatedAt));
+		.where(whereClause)
+		.orderBy(desc(chats.updatedAt))
+		.limit(limit + 1)
+		.offset(offset);
 
-	return json({ chats: userChats });
+	const hasMore = rawChats.length > limit;
+	const resultChats = rawChats.slice(0, limit);
+
+	return json({
+		chats: resultChats,
+		hasMore,
+		nextOffset: offset + limit
+	});
 };
 
 export const POST: RequestHandler = async ({ request, locals }) => {
