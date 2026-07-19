@@ -178,6 +178,7 @@
 
 <div class="mx-auto w-full max-w-3xl bg-transparent px-4 pb-4">
 	<!-- Drag and drop zone overlay style -->
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div
 		class="flex flex-col gap-2 rounded-2xl border bg-background p-2 shadow-sm transition-all {isDragging ? 'border-primary ring-2 ring-primary/20 bg-muted/20' : ''}"
 		ondragover={handleDragOver}
