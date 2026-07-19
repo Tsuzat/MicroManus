@@ -10,6 +10,7 @@
 	import ArrowDownIcon from '@lucide/svelte/icons/arrow-down';
 	import { Button } from '$lib/components/ui/button';
 	import { Shimmer } from '$lib/components/ai-elements/shimmer/index.js';
+	import Search from '$lib/components/custom/dialogs/search.svelte';
 
 	const { data } = $props();
 
@@ -229,14 +230,14 @@
 						<p class="text-sm">Send a message to start the conversation.</p>
 					</div>
 				{:else}
-					{#each chat.messages as message (message.id)}
+					{#each chat.messages as message, i (message.id)}
 						{@const textParts = message.parts?.filter((p) => p.type === 'text') ?? []}
 						{@const content =
-							textParts.length > 0 ? textParts.map((p) => p.text).join('\n') : message.content}
+							textParts.length > 0 ? textParts.map((p: any) => p.text).join('\n') : message.content}
 						{@const attachments =
 							message.parts
 								?.filter((p) => p.type === 'file')
-								.map((p) => ({
+								.map((p: any) => ({
 									type: p.type,
 									mediaType: p.mediaType,
 									url: p.url,
@@ -256,18 +257,23 @@
 										.filter(Boolean)
 										.join('\n')
 								: message.reasoning}
-
 						{@const toolInvocationParts =
 							message.parts
 								?.filter((p) => p.type === 'tool-invocation' || p.type.startsWith('tool-'))
 								.map((p: any) => {
 									if (p.type === 'tool-invocation') return p.toolInvocation;
-									// Handle AI SDK v4 format: p.type is "tool-toolName"
-									const toolName = p.type.startsWith('tool-')
-										? p.type.replace('tool-', '')
-										: undefined;
-									return { ...p, toolName };
-								}) ?? []}
+									if (p.type.startsWith('tool-')) {
+										return {
+											state: 'result',
+											toolCallId: p.toolCallId,
+											toolName: p.toolName,
+											args: p.input || p.args,
+											result: p.output || p.result
+										};
+									}
+									return undefined;
+								})
+								.filter(Boolean) ?? []}
 						{@const toolInvocations =
 							toolInvocationParts.length > 0
 								? toolInvocationParts
@@ -277,19 +283,22 @@
 							(a) => (a as any).type === 'sources'
 						)}
 						{@const sources = sourcesAnnotation ? (sourcesAnnotation as any).data : []}
-						<MessageBubble
-							role={message.role as 'user' | 'assistant'}
-							{content}
-							{attachments}
-							{reasoning}
-							{toolInvocations}
-							{sources}
-							modelId={message.role === 'assistant' ? selectedModelId : undefined}
-							messageId={message.id}
-							isStreaming={chat.status === 'streaming' &&
-								message.id === chat.messages[chat.messages.length - 1].id}
-							onRewrite={(id) => chat.regenerate({ messageId: id })}
-						/>
+
+						<div id={`message-${message.id}`} class="scroll-mt-4 transition-colors duration-500">
+							<MessageBubble
+								role={message.role as 'user' | 'assistant'}
+								{content}
+								{attachments}
+								{reasoning}
+								{toolInvocations}
+								{sources}
+								modelId={message.role === 'assistant' ? selectedModelId : undefined}
+								messageId={message.id}
+								isStreaming={chat.status === 'streaming' &&
+									message.id === chat.messages[chat.messages.length - 1].id}
+								onRewrite={(id) => chat.regenerate({ messageId: id })}
+							/>
+						</div>
 					{/each}
 
 					{#if chat.status === 'streaming' || chat.status === 'submitted'}
@@ -327,3 +336,5 @@
 			.filter(Boolean)}
 	/>
 </div>
+
+<Search messages={chat.messages} />
