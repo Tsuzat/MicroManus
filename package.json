@@ -74,6 +74,7 @@
 		"@ai-sdk/svelte": "^5.0.31",
 		"@polar-sh/better-auth": "^1.8.4",
 		"@polar-sh/sdk": "^0.48.1",
-		"ai": "^7.0.31"
+		"ai": "^7.0.31",
+		"svelte-streamdown": "^3.1.2"
 	}
 }

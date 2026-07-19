@@ -23,7 +23,7 @@
 	});
 
 	// Local input states initialized from page load
-	let keys = $state({
+	let keys = $derived({
 		openai: data.keys.openai?.masked || '',
 		anthropic: data.keys.anthropic?.masked || '',
 		google: data.keys.google?.masked || '',
@@ -90,7 +90,7 @@
 							<OpenAIIcon class="size-5" />
 						</div>
 						<div>
-							<h3 class="mt-0 text-sm font-semibold leading-none">OpenAI (ChatGPT)</h3>
+							<h3 class="mt-0 text-sm leading-none font-semibold">OpenAI (ChatGPT)</h3>
 							<p class="mt-1 text-xs text-muted-foreground">
 								Used for GPT-5.6 Sol, Terra, and Luna models.
 							</p>
@@ -109,7 +109,7 @@
 							<button
 								type="button"
 								onclick={() => (showKeys.openai = !showKeys.openai)}
-								class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+								class="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground hover:text-foreground"
 							>
 								{#if showKeys.openai}
 									<EyeOffIcon class="size-4" />
@@ -138,7 +138,7 @@
 							<AnthropicIcon class="size-5" />
 						</div>
 						<div>
-							<h3 class="mt-0 text-sm font-semibold leading-none">Anthropic (Claude)</h3>
+							<h3 class="mt-0 text-sm leading-none font-semibold">Anthropic (Claude)</h3>
 							<p class="mt-1 text-xs text-muted-foreground">
 								Used for Claude Sonnet 5, Opus 4.8, and Haiku 4.5.
 							</p>
@@ -157,7 +157,7 @@
 							<button
 								type="button"
 								onclick={() => (showKeys.anthropic = !showKeys.anthropic)}
-								class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+								class="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground hover:text-foreground"
 							>
 								{#if showKeys.anthropic}
 									<EyeOffIcon class="size-4" />
@@ -186,7 +186,7 @@
 							<GoogleIcon class="size-5" />
 						</div>
 						<div>
-							<h3 class="mt-0 text-sm font-semibold leading-none">Google AI (Gemini)</h3>
+							<h3 class="mt-0 text-sm leading-none font-semibold">Google AI (Gemini)</h3>
 							<p class="mt-1 text-xs text-muted-foreground">
 								Used for Gemini 3.1 Pro and Gemini 3.5 Flash models.
 							</p>
@@ -205,7 +205,7 @@
 							<button
 								type="button"
 								onclick={() => (showKeys.google = !showKeys.google)}
-								class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+								class="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground hover:text-foreground"
 							>
 								{#if showKeys.google}
 									<EyeOffIcon class="size-4" />
@@ -234,7 +234,7 @@
 							<KimiIcon class="size-5" />
 						</div>
 						<div>
-							<h3 class="mt-0 text-sm font-semibold leading-none">Kimi (Moonshot)</h3>
+							<h3 class="mt-0 text-sm leading-none font-semibold">Kimi (Moonshot)</h3>
 							<p class="mt-1 text-xs text-muted-foreground">
 								Used for Kimi K3 and Kimi K2.7 Code models.
 							</p>
@@ -253,7 +253,7 @@
 							<button
 								type="button"
 								onclick={() => (showKeys.kimi = !showKeys.kimi)}
-								class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+								class="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground hover:text-foreground"
 							>
 								{#if showKeys.kimi}
 									<EyeOffIcon class="size-4" />

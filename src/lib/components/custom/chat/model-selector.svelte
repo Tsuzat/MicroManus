@@ -7,7 +7,7 @@
 	} from '$lib/ai/providers';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { Button } from '$lib/components/ui/button';
-	import { OpenAIIcon, GoogleIcon, AnthropicIcon, KimiIcon } from '$lib/components/custom/icons';
+	import { OpenAIIcon, GeminiIcon, AnthropicIcon, KimiIcon } from '$lib/components/custom/icons';
 	import ChevronDownIcon from '@lucide/svelte/icons/chevron-down';
 	import CheckIcon from '@lucide/svelte/icons/check';
 	import type { Component } from 'svelte';
@@ -26,7 +26,7 @@
 	const providerIcons: Record<AIProvider, Component> = {
 		openai: OpenAIIcon,
 		anthropic: AnthropicIcon,
-		google: GoogleIcon,
+		google: GeminiIcon,
 		kimi: KimiIcon
 	};
 

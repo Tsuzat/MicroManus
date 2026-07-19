@@ -1,10 +1,14 @@
 <script lang="ts">
 	import { onMount, tick } from 'svelte';
+	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
+	import { toast } from 'svelte-sonner';
 	import { Chat } from '@ai-sdk/svelte';
 	import { DefaultChatTransport, type UIMessage } from 'ai';
 	import { DEFAULT_MODEL_ID } from '$lib/ai/providers';
 	import { ChatInput, MessageBubble } from '$lib/components/custom/chat';
 	import ArrowDownIcon from '@lucide/svelte/icons/arrow-down';
+	import { Button } from '$lib/components/ui/button';
 
 	const { data } = $props();
 
@@ -26,7 +30,19 @@
 				chatId: data.chat?.id ?? ''
 			})
 		}),
-		messages: []
+		messages: [],
+		onError: (error) => {
+			if (error.message.includes('API Key') || error.message.includes('Settings')) {
+				toast.error(error.message, {
+					action: {
+						label: 'Add Key',
+						onClick: () => goto(resolve('/(app)/settings'))
+					}
+				});
+			} else {
+				toast.error(error.message || 'An error occurred while streaming.');
+			}
+		}
 	});
 
 	$effect(() => {
@@ -80,12 +96,23 @@
 		showScrollButton = scrollHeight - scrollTop - clientHeight > 100;
 	}
 
-	// Auto-scroll when new messages arrive
+	// Auto-scroll when new messages arrive or stream content updates
 	$effect(() => {
-		// Track messages length to auto-scroll
-		const msgCount = chat.messages.length;
-		if (msgCount > 0) {
-			scrollToBottom();
+		// Track messages length and the text parts of the last message to trigger on every streaming chunk
+		const messages = chat.messages;
+		const lastMessage = messages[messages.length - 1];
+		const lastMessageContent = lastMessage?.parts
+			?.filter((p) => p.type === 'text')
+			.map((p) => p.text)
+			.join('');
+
+		// Auto-scroll if the user is already near the bottom (within 150px) or if streaming is active
+		if (messagesContainer) {
+			const { scrollTop, scrollHeight, clientHeight } = messagesContainer;
+			const isNearBottom = scrollHeight - scrollTop - clientHeight < 150;
+			if (isNearBottom || chat.status === 'streaming') {
+				scrollToBottom();
+			}
 		}
 	});
 
@@ -128,57 +155,56 @@
 		<h1 class="truncate text-sm font-medium">{chatTitle}</h1>
 	</div>
 
-	<!-- Messages area -->
-	<div
-		bind:this={messagesContainer}
-		onscroll={handleScroll}
-		class="relative flex-1 overflow-y-auto"
-	>
-		<div class="mx-auto max-w-3xl px-4">
-			{#if chat.messages.length === 0}
-				<div
-					class="flex h-full items-center justify-center py-20 text-center text-muted-foreground"
-				>
-					<p class="text-sm">Send a message to start the conversation.</p>
-				</div>
-			{:else}
-				{#each chat.messages as message (message.id)}
-					{@const textParts = message.parts?.filter((p) => p.type === 'text') ?? []}
-					{@const content = textParts.map((p) => p.text).join('\n')}
-					<MessageBubble
-						role={message.role as 'user' | 'assistant'}
-						{content}
-						modelId={message.role === 'assistant' ? selectedModelId : undefined}
-						userImage={data.user?.image ?? undefined}
-						userName={data.user?.name ?? undefined}
-					/>
-				{/each}
-
-				{#if chat.status === 'streaming' || chat.status === 'submitted'}
-					<div class="flex items-center gap-2 py-4">
-						<div class="flex gap-1">
-							<span class="size-2 animate-bounce rounded-full bg-primary/60 [animation-delay:0ms]"
-							></span>
-							<span class="size-2 animate-bounce rounded-full bg-primary/60 [animation-delay:150ms]"
-							></span>
-							<span class="size-2 animate-bounce rounded-full bg-primary/60 [animation-delay:300ms]"
-							></span>
-						</div>
-						<span class="text-xs text-muted-foreground">Thinking...</span>
+	<!-- Messages area container -->
+	<div class="relative min-h-0 flex-1">
+		<div
+			bind:this={messagesContainer}
+			onscroll={handleScroll}
+			class="h-full w-full overflow-y-auto"
+		>
+			<div class="mx-auto max-w-4xl px-4 pb-20">
+				{#if chat.messages.length === 0}
+					<div
+						class="flex h-full items-center justify-center py-20 text-center text-muted-foreground"
+					>
+						<p class="text-sm">Send a message to start the conversation.</p>
 					</div>
+				{:else}
+					{#each chat.messages as message (message.id)}
+						{@const textParts = message.parts?.filter((p) => p.type === 'text') ?? []}
+						{@const content = textParts.map((p) => p.text).join('\n')}
+						<MessageBubble
+							role={message.role as 'user' | 'assistant'}
+							{content}
+							modelId={message.role === 'assistant' ? selectedModelId : undefined}
+						/>
+					{/each}
+
+					{#if chat.status === 'streaming' || chat.status === 'submitted'}
+						<div class="flex items-center gap-2 py-4">
+							<div class="flex gap-1">
+								<span class="size-2 animate-bounce rounded-full bg-primary/60 [animation-delay:0ms]"
+								></span>
+								<span
+									class="size-2 animate-bounce rounded-full bg-primary/60 [animation-delay:150ms]"
+								></span>
+								<span
+									class="size-2 animate-bounce rounded-full bg-primary/60 [animation-delay:300ms]"
+								></span>
+							</div>
+							<span class="text-xs text-muted-foreground">Thinking...</span>
+						</div>
+					{/if}
 				{/if}
-			{/if}
+			</div>
 		</div>
 
-		<!-- Scroll to bottom button -->
+		<!-- Floating Scroll to bottom button -->
 		{#if showScrollButton}
-			<button
-				onclick={scrollToBottom}
-				class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-1.5 rounded-full border bg-background px-3 py-1.5 text-xs shadow-md transition-all hover:bg-muted"
-			>
+			<Button onclick={scrollToBottom} class="absolute bottom-4 left-1/2 z-10 -translate-x-1/2">
 				<ArrowDownIcon class="size-3" />
 				<span>Scroll to bottom</span>
-			</button>
+			</Button>
 		{/if}
 	</div>
 

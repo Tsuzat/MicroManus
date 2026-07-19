@@ -75,12 +75,8 @@
 	}
 </script>
 
-<div
-	class="mx-auto w-full max-w-3xl px-4 pb-4"
->
-	<div
-		class="flex flex-col gap-2 rounded-2xl border bg-background p-2 shadow-sm transition-shadow focus-within:shadow-md"
-	>
+<div class="mx-auto w-full max-w-3xl px-4 pb-4">
+	<div class="flex flex-col gap-2 rounded-2xl border bg-background p-2 shadow-sm transition-shadow">
 		<textarea
 			bind:this={textareaEl}
 			bind:value={inputText}
@@ -90,8 +86,7 @@
 			rows={1}
 			disabled={isStreaming}
 			class="max-h-[200px] min-h-[44px] w-full resize-none bg-transparent px-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground disabled:opacity-50"
-			{...autofocus ? { autofocus: true } : {}}
-		></textarea>
+			{...autofocus ? { autofocus: true } : {}}></textarea>
 
 		<!-- Toolbar -->
 		<div class="flex items-center justify-between px-1">

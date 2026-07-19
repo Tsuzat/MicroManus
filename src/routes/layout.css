@@ -164,10 +164,6 @@ html {
 		@apply mt-6 border-s-2 ps-6 italic;
 	}
 
-	code {
-		@apply relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-sm font-semibold;
-	}
-
 	.lead {
 		@apply text-xl text-muted-foreground;
 	}

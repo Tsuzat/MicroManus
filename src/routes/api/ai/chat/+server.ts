@@ -38,7 +38,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 	try {
 		languageModel = await resolveModel(modelId, locals.user.id);
 	} catch (err: any) {
-		return json({ error: err.message || `Failed to resolve model: ${modelId}` }, { status: 400 });
+		return new Response(err.message || `Failed to resolve model: ${modelId}`, { status: 400 });
 	}
 
 	const result = streamText({
