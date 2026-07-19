@@ -324,7 +324,7 @@
 			title="Open Pricing"
 		>
 			<span class="text-sm text-foreground"
-				>✨ Now supporting <span class="font-bold">8+ AI providers</span> with BYOK ✨</span
+				>✨ Supporting <span class="font-bold">3 Major AI providers</span> with BYOK ✨</span
 			>
 			<span class="block h-4 w-0.5 border-l bg-muted-foreground dark:border-background"></span>
 			<div

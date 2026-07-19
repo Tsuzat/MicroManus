@@ -117,4 +117,4 @@ export function getModelsByProvider(): Record<AIProvider, ModelConfig[]> {
 }
 
 /** Default model to use when none is selected */
-export const DEFAULT_MODEL_ID = 'gemini-3.5-flash';
+export const DEFAULT_MODEL_ID = 'gpt-5.4-nano';
