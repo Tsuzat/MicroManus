@@ -27,6 +27,9 @@ export default defineConfig({
 			}
 		})
 	],
+	ssr: {
+		external: ['drizzle-orm']
+	},
 	test: {
 		expect: { requireAssertions: true },
 		projects: [
