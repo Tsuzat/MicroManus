@@ -21,13 +21,11 @@
 	import LogOutIcon from '@lucide/svelte/icons/log-out';
 	import PinIcon from '@lucide/svelte/icons/pin';
 	import ChevronDownIcon from '@lucide/svelte/icons/chevron-down';
+	import { getInitials } from '$lib/utils';
+	import type { User } from 'better-auth';
 
 	interface Props {
-		user?: {
-			name: string;
-			email: string;
-			image?: string | null;
-		};
+		user?: User;
 	}
 
 	let { user }: Props = $props();
@@ -37,17 +35,6 @@
 
 	const isDashboardActive = $derived(page.url.pathname === '/dashboard');
 	const isNewChatActive = $derived(page.url.pathname.includes('/chat/new'));
-
-	const userInitials = $derived(
-		user?.name
-			? user.name
-					.split(' ')
-					.map((n) => n[0])
-					.join('')
-					.toUpperCase()
-					.slice(0, 2)
-			: 'U'
-	);
 </script>
 
 <Sidebar.Root collapsible="icon">
@@ -176,8 +163,10 @@
 								class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
 							>
 								<Avatar.Root class="size-8 rounded-lg">
-									<Avatar.Image src={user?.image ?? ''} alt={user?.name ?? 'User'} />
-									<Avatar.Fallback class="rounded-lg">{userInitials}</Avatar.Fallback>
+									<Avatar.Image src={user?.image ?? ''} alt={user?.name} />
+									<Avatar.Fallback class="rounded-lg"
+										>{getInitials(user?.name ?? 'User')}</Avatar.Fallback
+									>
 								</Avatar.Root>
 								<div class="grid flex-1 text-start text-sm leading-tight">
 									<span class="truncate font-medium">{user?.name ?? 'User'}</span>
@@ -197,7 +186,9 @@
 							<div class="flex items-center gap-2 px-1 py-1.5 text-start text-sm">
 								<Avatar.Root class="size-8 rounded-lg">
 									<Avatar.Image src={user?.image ?? ''} alt={user?.name ?? 'User'} />
-									<Avatar.Fallback class="rounded-lg">{userInitials}</Avatar.Fallback>
+									<Avatar.Fallback class="rounded-lg"
+										>{getInitials(user?.name ?? 'User')}</Avatar.Fallback
+									>
 								</Avatar.Root>
 								<div class="grid flex-1 text-start text-sm leading-tight">
 									<span class="truncate font-medium">{user?.name ?? 'User'}</span>
