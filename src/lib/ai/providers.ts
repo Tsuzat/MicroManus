@@ -45,6 +45,20 @@ export const MODELS: ModelConfig[] = [
 		contextWindow: 1_050_000,
 		pricing: { inputPerMTok: 1, outputPerMTok: 6 }
 	},
+	{
+		id: 'gpt-5.5',
+		label: 'GPT-5.5',
+		provider: 'openai',
+		contextWindow: 512_000,
+		pricing: { inputPerMTok: 2, outputPerMTok: 10 }
+	},
+	{
+		id: 'gpt-5.4-nano',
+		label: 'GPT-5.4 Nano',
+		provider: 'openai',
+		contextWindow: 256_000,
+		pricing: { inputPerMTok: 0.2, outputPerMTok: 1 }
+	},
 
 	// --- Anthropic: Claude Sonnet 5 / Opus 4.8 / Haiku 4.5 ---
 	{

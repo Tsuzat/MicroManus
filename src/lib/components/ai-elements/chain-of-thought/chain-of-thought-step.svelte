@@ -75,10 +75,10 @@
 		<Icon class="size-4" />
 		<div class="absolute top-7 bottom-0 left-1/2 -mx-px w-px bg-border"></div>
 	</div>
-	<div class="flex-1 space-y-2">
-		<div>{label}</div>
+	<div class="min-w-0 flex-1 space-y-2">
+		<div class="wrap-break-word">{label}</div>
 		{#if description}
-			<div class="text-xs text-muted-foreground">{description}</div>
+			<div class="text-xs wrap-break-word text-muted-foreground">{description}</div>
 		{/if}
 		{#if children}
 			{@render children()}

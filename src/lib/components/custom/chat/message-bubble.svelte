@@ -146,14 +146,18 @@
 						{#if toolInvocations}
 							{#each toolInvocations as tool, idx (idx)}
 								{#if tool.toolName === 'webSearch'}
+									{@const toolArgs = tool.args || (tool as any).input || {}}
+									{@const toolRes = tool.result || (tool as any).output}
+									{@const isComplete =
+										tool.state === 'result' || (tool as any).state === 'output-available'}
 									<ChainOfThought.Step
 										icon={SearchIcon}
-										label={`Searching for "${tool.args.query}"`}
-										status={tool.state === 'result' ? 'complete' : 'active'}
+										label={`Searching for "${toolArgs.query || ''}"`}
+										status={isComplete ? 'complete' : 'active'}
 									>
-										{#if tool.state === 'result' && tool.result && tool.result.results}
+										{#if isComplete && toolRes && toolRes.results}
 											<ChainOfThought.SearchResults>
-												{#each tool.result.results as res (res.url)}
+												{#each toolRes.results as res (res.url)}
 													<ChainOfThought.SearchResult>
 														<a
 															href={res.url}
@@ -166,8 +170,8 @@
 													</ChainOfThought.SearchResult>
 												{/each}
 											</ChainOfThought.SearchResults>
-										{:else if tool.state === 'result' && tool.result && tool.result.error}
-											<div class="text-xs text-destructive">{tool.result.error}</div>
+										{:else if isComplete && toolRes && toolRes.error}
+											<div class="text-xs text-destructive">{toolRes.error}</div>
 										{/if}
 									</ChainOfThought.Step>
 								{/if}
@@ -242,29 +246,6 @@
 						</Button>
 					{/if}
 				</div>
-
-				<!-- Web Sources Pills next to action icons -->
-				{#if allSources && allSources.length > 0}
-					<div class="flex flex-wrap items-center gap-1.5 border-l border-border/50 pl-2">
-						<span class="mr-1 text-[11px] font-medium text-muted-foreground">Sources:</span>
-						{#each allSources as source, index (index)}
-							<a
-								href={source.url}
-								target="_blank"
-								rel="noopener noreferrer external"
-								class="flex items-center gap-1.5 rounded-full border border-border/60 bg-muted/40 px-2.5 py-0.5 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-								title={`${source.title}\n${source.snippet}`}
-							>
-								<img
-									src={`https://www.google.com/s2/favicons?domain=${getHostname(source.url)}`}
-									alt=""
-									class="size-3 rounded-sm"
-								/>
-								<span class="max-w-[110px] truncate">{getHostname(source.url)}</span>
-							</a>
-						{/each}
-					</div>
-				{/if}
 			</div>
 		{/if}
 
@@ -291,6 +272,7 @@
 					{:else}
 						<a
 							href={attachment.url}
+							rel="external"
 							download={attachment.filename || 'file'}
 							class="flex max-w-[240px] min-w-[120px] items-center gap-2 rounded-lg border bg-muted/40 px-3 py-2 text-xs text-foreground transition-colors hover:bg-muted"
 							title="Download attachment"

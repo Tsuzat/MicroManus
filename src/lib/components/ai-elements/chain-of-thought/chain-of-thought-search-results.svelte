@@ -11,6 +11,6 @@
 	let { children, class: className, ...restProps }: ChainOfThoughtSearchResultsProps = $props();
 </script>
 
-<div class={cn('flex items-center gap-2', className)} {...restProps}>
+<div class={cn('flex flex-wrap items-center gap-2', className)} {...restProps}>
 	{@render children()}
 </div>

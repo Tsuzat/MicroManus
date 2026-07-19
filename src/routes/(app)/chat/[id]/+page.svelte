@@ -9,6 +9,7 @@
 	import { ChatInput, MessageBubble, ChatExportButton } from '$lib/components/custom/chat';
 	import ArrowDownIcon from '@lucide/svelte/icons/arrow-down';
 	import { Button } from '$lib/components/ui/button';
+	import { Shimmer } from '$lib/components/ai-elements/shimmer/index.js';
 
 	const { data } = $props();
 
@@ -42,6 +43,27 @@
 			} else {
 				toast.error(error.message || 'An error occurred while streaming.');
 			}
+		},
+		onFinish: (message) => {
+			console.log('🏁 [AI SDK] ON FINISH (Final Server Message):', message);
+			toast.info(`Received final message with ${message.parts?.length || 0} parts.`);
+
+			const hasReasoning =
+				message.message.parts?.some((p) => p.type === 'reasoning') || message.reasoning;
+			const hasTools =
+				message.message.parts?.some((p) => p.type === 'tool-invocation') ||
+				message.message.toolInvocations;
+			console.log(`[AI SDK] Has Reasoning: ${!!hasReasoning} | Has Tools: ${!!hasTools}`);
+			console.log('[AI SDK] Annotations:', message.message.annotations);
+			console.log('[AI SDK] Tool Invocations:', message.message.toolInvocations);
+		}
+	});
+
+	// Log live streaming updates to the console
+	$effect(() => {
+		const lastMessage = chat.messages[chat.messages.length - 1];
+		if (lastMessage && lastMessage.role === 'assistant') {
+			console.log('📡 [AI SDK] LIVE STREAMING MESSAGE SNAPSHOT:', $state.snapshot(lastMessage));
 		}
 	});
 
@@ -240,8 +262,15 @@
 
 						{@const toolInvocationParts =
 							message.parts
-								?.filter((p) => p.type === 'tool-invocation')
-								.map((p: any) => p.toolInvocation) ?? []}
+								?.filter((p) => p.type === 'tool-invocation' || p.type.startsWith('tool-'))
+								.map((p: any) => {
+									if (p.type === 'tool-invocation') return p.toolInvocation;
+									// Handle AI SDK v4 format: p.type is "tool-toolName"
+									const toolName = p.type.startsWith('tool-')
+										? p.type.replace('tool-', '')
+										: undefined;
+									return { ...p, toolName };
+								}) ?? []}
 						{@const toolInvocations =
 							toolInvocationParts.length > 0
 								? toolInvocationParts
@@ -266,17 +295,7 @@
 
 					{#if chat.status === 'streaming' || chat.status === 'submitted'}
 						<div class="flex items-center gap-2 py-4">
-							<div class="flex gap-1">
-								<span class="size-2 animate-bounce rounded-full bg-primary/60 [animation-delay:0ms]"
-								></span>
-								<span
-									class="size-2 animate-bounce rounded-full bg-primary/60 [animation-delay:150ms]"
-								></span>
-								<span
-									class="size-2 animate-bounce rounded-full bg-primary/60 [animation-delay:300ms]"
-								></span>
-							</div>
-							<span class="text-xs text-muted-foreground">Thinking...</span>
+							<Shimmer content_length={11}>Thinking...</Shimmer>
 						</div>
 					{/if}
 				{/if}
