@@ -10,6 +10,7 @@
 	import Zap from '@lucide/svelte/icons/zap';
 	import ShieldCheck from '@lucide/svelte/icons/shield-check';
 	import Menu from '@lucide/svelte/icons/menu';
+	import User from '@lucide/svelte/icons/user';
 	import { onMount } from 'svelte';
 	import Logout from '@lucide/svelte/icons/log-out';
 	import { goto } from '$app/navigation';
@@ -292,9 +293,12 @@
 				<Dropdown.Content class="w-fit">
 					<Dropdown.Group>
 						<Dropdown.Label>{user.name}</Dropdown.Label>
-						<Dropdown.Label class="text-xs text-muted-foreground">
-							{user.email}
-						</Dropdown.Label>
+						<a href={resolve('/(app)/account')}>
+							<Dropdown.Item>
+								<User />
+								Account</Dropdown.Item
+							>
+						</a>
 						<Dropdown.Item variant="destructive" onclick={() => goto(resolve('/signout'))}>
 							<Logout />
 							Sign Out

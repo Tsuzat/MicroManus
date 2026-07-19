@@ -209,17 +209,9 @@
 						</DropdownMenu.Label>
 						<DropdownMenu.Separator />
 						<DropdownMenu.Group>
-							<DropdownMenu.Item>
+							<DropdownMenu.Item onclick={() => goto(resolve('/(app)/account'))}>
 								<BadgeCheckIcon />
 								<span>Account</span>
-							</DropdownMenu.Item>
-							<DropdownMenu.Item>
-								<CreditCardIcon />
-								<span>Billing</span>
-							</DropdownMenu.Item>
-							<DropdownMenu.Item>
-								<BellIcon />
-								<span>Notifications</span>
 							</DropdownMenu.Item>
 						</DropdownMenu.Group>
 						<DropdownMenu.Separator />
