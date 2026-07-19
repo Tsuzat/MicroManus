@@ -7,6 +7,7 @@
 	import * as Sidebar from '$lib/components/ui/sidebar';
 	import { useSidebar } from '$lib/components/ui/sidebar';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
+	import { confirmDelete } from '$lib/components/custom';
 	import { toast } from 'svelte-sonner';
 
 	import EllipsisIcon from '@lucide/svelte/icons/ellipsis';
@@ -34,17 +35,29 @@
 		}
 	};
 
-	const handleTogglePin = () => {
-		chatsContext?.togglePin(chat.id);
-		toast.success(chat.isPinned ? 'Chat pinned' : 'Chat unpinned');
+	const handleTogglePin = async () => {
+		const willBePinned = !chat.isPinned;
+		toast.success(willBePinned ? 'Chat pinned' : 'Chat unpinned');
+		await chatsContext.togglePin(chat.id);
 	};
 
 	const handleDelete = () => {
-		chatsContext?.deleteChat(chat.id);
-		toast.success('Chat deleted');
-		if (isActive) {
-			goto(resolve('/(app)/chat/new'));
-		}
+		confirmDelete({
+			title: 'Delete Chat',
+			description: 'Are you sure you want to delete this chat? This action cannot be undone.',
+			input: {
+				confirmationText: 'DELETE'
+			},
+			confirm: {
+				text: 'Delete Chat'
+			},
+			onConfirm: async () => {
+				if (isActive) {
+					goto(resolve('/(app)/chat/new'));
+				}
+				await chatsContext.deleteChat(chat.id);
+			}
+		});
 	};
 </script>
 
@@ -67,7 +80,7 @@
 			{/snippet}
 		</DropdownMenu.Trigger>
 		<DropdownMenu.Content
-			class="w-56 rounded-lg"
+			class="w-fit"
 			side={sidebar.isMobile ? 'bottom' : 'right'}
 			align={sidebar.isMobile ? 'end' : 'start'}
 		>

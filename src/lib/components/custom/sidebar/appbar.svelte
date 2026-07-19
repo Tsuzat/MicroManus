@@ -51,10 +51,22 @@
 <Sidebar.Root collapsible="icon">
 	<Sidebar.Header>
 		<Sidebar.Menu>
-			<Sidebar.MenuItem>
-				<Sidebar.MenuButton size="lg" class="hover:bg-transparent">
-					<AppLogo showLogo={!sidebar.state || sidebar.state !== 'collapsed'} size={2} />
-				</Sidebar.MenuButton>
+			<Sidebar.MenuItem class="flex items-center justify-between">
+				{#if !sidebar.open}
+					<div class="group relative flex size-8 items-center justify-center">
+						<div class="flex items-center justify-center group-hover:hidden">
+							<AppLogo showLogo={false} size={2} />
+						</div>
+						<div class="hidden items-center justify-center group-hover:flex">
+							<Sidebar.Trigger class="size-8" />
+						</div>
+					</div>
+				{:else}
+					<Sidebar.MenuButton size="default" class="hover:bg-transparent">
+						<AppLogo showLogo={false} size={2} />
+					</Sidebar.MenuButton>
+					<Sidebar.Trigger class="ms-auto" />
+				{/if}
 			</Sidebar.MenuItem>
 		</Sidebar.Menu>
 	</Sidebar.Header>

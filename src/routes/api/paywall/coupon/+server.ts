@@ -1,6 +1,7 @@
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { isUserUnlocked, unlockUser } from '$lib/server/unlock';
 import { COUPON_CODE } from '$env/static/private';
+import { couponSchema } from '$lib/schemas/paywall';
 
 export const POST: RequestHandler = async ({ request, locals }) => {
 	if (!locals.user) {
@@ -15,18 +16,19 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		return json({ success: true, message: 'Already unlocked' });
 	}
 
-	let body: { code?: string } = {};
+	let rawBody: unknown;
 	try {
-		body = await request.json();
+		rawBody = await request.json();
 	} catch {
-		return json({ error: 'Invalid request body' }, { status: 400 });
+		return json({ error: 'Invalid JSON request body' }, { status: 400 });
 	}
 
-	const inputCode = body.code?.trim();
-	if (!inputCode) {
-		return json({ error: 'Coupon code is required' }, { status: 400 });
+	const parseResult = couponSchema.safeParse(rawBody);
+	if (!parseResult.success) {
+		return json({ error: 'Validation failed', details: parseResult.error.flatten() }, { status: 400 });
 	}
 
+	const inputCode = parseResult.data.code;
 	const validCode = COUPON_CODE.trim();
 
 	if (inputCode.toUpperCase() !== validCode.toUpperCase()) {
