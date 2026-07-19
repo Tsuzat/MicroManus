@@ -2,7 +2,7 @@ import { redirect } from '@sveltejs/kit';
 import type { LayoutServerLoad } from './$types';
 import { isUserUnlocked } from '$lib/server/unlock';
 import { db } from '$lib/server/db';
-import { chats } from '$lib/server/db/schema';
+import { chats, apiKeys } from '$lib/server/db/schema';
 import { eq, and, desc } from 'drizzle-orm';
 
 export const load: LayoutServerLoad = async ({ locals: { user, session } }) => {
@@ -34,10 +34,24 @@ export const load: LayoutServerLoad = async ({ locals: { user, session } }) => {
 	const hasMore = recentChatsRaw.length > 10;
 	const recentChats = recentChatsRaw.slice(0, 10);
 
+	// 3. Fetch user API keys configuration status
+	const userKeys = await db
+		.select({ provider: apiKeys.provider, baseUrl: apiKeys.baseUrl })
+		.from(apiKeys)
+		.where(eq(apiKeys.userId, user.id));
+
+	const keysConfigured = {
+		openai: userKeys.some((k) => k.provider === 'openai'),
+		anthropic: userKeys.some((k) => k.provider === 'anthropic'),
+		google: userKeys.some((k) => k.provider === 'google'),
+		kimi: userKeys.some((k) => k.provider === 'custom' && k.baseUrl?.includes('moonshot'))
+	};
+
 	return {
 		user,
 		session,
 		chats: [...pinnedChats, ...recentChats],
-		hasMore
+		hasMore,
+		keysConfigured
 	};
 };
