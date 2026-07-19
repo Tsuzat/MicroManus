@@ -77,6 +77,7 @@ export const chats = pgTable('chats', {
 		.notNull()
 		.references(() => user.id, { onDelete: 'cascade' }),
 	title: text('title').notNull().default('New Chat'),
+	isPinned: boolean('is_pinned').default(false).notNull(),
 	isArchived: boolean('is_archived').default(false).notNull(),
 	createdAt: timestamp('created_at').defaultNow().notNull(),
 	updatedAt: timestamp('updated_at')

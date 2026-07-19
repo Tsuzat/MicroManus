@@ -1,7 +1,7 @@
 import type { Chat } from '$lib/server/db/schema';
 import { getContext, setContext } from 'svelte';
 
-class Chats {
+export class Chats {
 	#chats = $state<Chat[]>([]);
 
 	constructor(chats: Chat[] = []) {
@@ -11,8 +11,32 @@ class Chats {
 	get chats() {
 		return this.#chats;
 	}
+
 	set chats(newChats: Chat[]) {
 		this.#chats = newChats;
+	}
+
+	get pinnedChats() {
+		return this.#chats.filter((c) => c.isPinned && !c.isArchived);
+	}
+
+	get otherChats() {
+		return this.#chats.filter((c) => !c.isPinned && !c.isArchived);
+	}
+
+	togglePin(chatId: string) {
+		const target = this.#chats.find((c) => c.id === chatId);
+		if (target) {
+			target.isPinned = !target.isPinned;
+		}
+	}
+
+	deleteChat(chatId: string) {
+		this.#chats = this.#chats.filter((c) => c.id !== chatId);
+	}
+
+	addChat(newChat: Chat) {
+		this.#chats = [newChat, ...this.#chats];
 	}
 }
 
@@ -23,5 +47,5 @@ export const setChatsContext = (chats: Chat[] = []) => {
 };
 
 export const useChatsContext = () => {
-	return getContext<ReturnType<typeof setChatsContext>>(CHATS_KEY);
+	return getContext<Chats>(CHATS_KEY);
 };

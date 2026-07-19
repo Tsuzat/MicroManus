@@ -1,21 +1,24 @@
 <script lang="ts">
 	import { setChatsContext } from '$lib/hooks/chats.svelte';
-	import { onMount } from 'svelte';
-	const { data, children } = $props();
 	import * as Sidebar from '$lib/components/ui/sidebar';
 	import { Separator } from '$lib/components/ui/separator';
+	import AppSidebar from '$lib/components/custom/sidebar/appbar.svelte';
 
-	const chats = setChatsContext();
+	const { data, children } = $props();
 
-	onMount(() => {
-		chats.chats = data.chats;
+	const chatsContext = setChatsContext(data.chats ?? []);
+
+	$effect(() => {
+		if (data.chats) {
+			chatsContext.chats = data.chats;
+		}
 	});
 </script>
 
 <Sidebar.Provider>
-	<AppSidebar />
+	<AppSidebar user={data.user} />
 	<Sidebar.Inset>
-		<header class="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+		<header class="flex h-14 shrink-0 items-center gap-2 border-b px-4">
 			<Sidebar.Trigger class="-ms-1" />
 			<Separator orientation="vertical" class="me-2 h-4" />
 		</header>
