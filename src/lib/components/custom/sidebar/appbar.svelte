@@ -21,6 +21,7 @@
 	import LogOutIcon from '@lucide/svelte/icons/log-out';
 	import PinIcon from '@lucide/svelte/icons/pin';
 	import ChevronDownIcon from '@lucide/svelte/icons/chevron-down';
+	import SettingsIcon from '@lucide/svelte/icons/settings';
 	import { getInitials } from '$lib/utils';
 	import type { User } from 'better-auth';
 
@@ -35,6 +36,7 @@
 
 	const isDashboardActive = $derived(page.url.pathname === '/dashboard');
 	const isNewChatActive = $derived(page.url.pathname.includes('/chat/new'));
+	const isSettingsActive = $derived(page.url.pathname.includes('/settings'));
 </script>
 
 <Sidebar.Root variant="inset" collapsible="icon" id="sidebar-main">
@@ -91,6 +93,17 @@
 							<a href={resolve('/(app)/chat/new')} title="New Chat" {...props}>
 								<PlusIcon class="size-4 shrink-0 text-muted-foreground" />
 								<span>New Chat</span>
+							</a>
+						{/snippet}
+					</Sidebar.MenuButton>
+				</Sidebar.MenuItem>
+
+				<Sidebar.MenuItem>
+					<Sidebar.MenuButton isActive={isSettingsActive}>
+						{#snippet child({ props })}
+							<a href={resolve('/(app)/settings')} title="Settings" {...props}>
+								<SettingsIcon class="size-4 shrink-0 text-muted-foreground" />
+								<span>Settings</span>
 							</a>
 						{/snippet}
 					</Sidebar.MenuButton>

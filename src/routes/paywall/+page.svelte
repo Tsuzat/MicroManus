@@ -61,8 +61,8 @@
 			setTimeout(() => {
 				goto(resolve('/(app)/chat/new'));
 			}, 800);
-		} catch (err: unknown) {
-			toast.error(err.message || 'An unexpected error occurred');
+		} catch (err: any) {
+			toast.error(err?.message || 'An unexpected error occurred');
 		} finally {
 			isSubmittingCoupon = false;
 		}

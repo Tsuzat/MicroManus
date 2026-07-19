@@ -1,0 +1,193 @@
+<script lang="ts">
+	import { onMount, tick } from 'svelte';
+	import { Chat } from '@ai-sdk/svelte';
+	import { DefaultChatTransport, type UIMessage } from 'ai';
+	import { DEFAULT_MODEL_ID } from '$lib/ai/providers';
+	import { ChatInput, MessageBubble } from '$lib/components/custom/chat';
+	import ArrowDownIcon from '@lucide/svelte/icons/arrow-down';
+
+	const { data } = $props();
+
+	let selectedModelId = $state(
+		(typeof window !== 'undefined' && localStorage.getItem('micromanus:selectedModel')) ||
+			DEFAULT_MODEL_ID
+	);
+
+	let messagesContainer: HTMLDivElement | undefined = $state();
+	let showScrollButton = $state(false);
+	let hasInitialMessageBeenSent = $state(false);
+
+	// Initialize Chat instance from AI SDK
+	const chat = new Chat({
+		transport: new DefaultChatTransport({
+			api: '/api/ai/chat',
+			body: () => ({
+				model: selectedModelId,
+				chatId: data.chat?.id ?? ''
+			})
+		}),
+		messages: []
+	});
+
+	$effect(() => {
+		chat.messages = convertDbMessagesToUIMessages(data.messages ?? []);
+	});
+
+	/**
+	 * Convert DB messages (role + content) to AI SDK UIMessage format.
+	 */
+	function convertDbMessagesToUIMessages(
+		dbMessages: Array<{ id: string; role: string; content: string; createdAt: Date }>
+	): UIMessage[] {
+		return dbMessages.map((msg) => ({
+			id: msg.id,
+			role: msg.role as 'user' | 'assistant',
+			parts: [{ type: 'text' as const, text: msg.content }],
+			createdAt: new Date(msg.createdAt)
+		}));
+	}
+
+	function handleModelSelect(modelId: string) {
+		selectedModelId = modelId;
+		if (typeof window !== 'undefined') {
+			localStorage.setItem('micromanus:selectedModel', modelId);
+		}
+	}
+
+	function handleSubmit(text: string) {
+		chat.sendMessage({ text });
+		scrollToBottom();
+	}
+
+	function handleStop() {
+		chat.stop();
+	}
+
+	function scrollToBottom() {
+		requestAnimationFrame(() => {
+			if (messagesContainer) {
+				messagesContainer.scrollTo({
+					top: messagesContainer.scrollHeight,
+					behavior: 'smooth'
+				});
+			}
+		});
+	}
+
+	function handleScroll() {
+		if (!messagesContainer) return;
+		const { scrollTop, scrollHeight, clientHeight } = messagesContainer;
+		showScrollButton = scrollHeight - scrollTop - clientHeight > 100;
+	}
+
+	// Auto-scroll when new messages arrive
+	$effect(() => {
+		// Track messages length to auto-scroll
+		const msgCount = chat.messages.length;
+		if (msgCount > 0) {
+			scrollToBottom();
+		}
+	});
+
+	// Handle initial message from /chat/new redirect
+	onMount(async () => {
+		const url = new URL(window.location.href);
+		const initialMessage = url.searchParams.get('initial');
+		const initialModel = url.searchParams.get('model');
+
+		if (initialMessage && !hasInitialMessageBeenSent) {
+			hasInitialMessageBeenSent = true;
+
+			if (initialModel) {
+				selectedModelId = initialModel;
+				localStorage.setItem('micromanus:selectedModel', initialModel);
+			}
+
+			// Clean URL params
+			const cleanUrl = url.pathname;
+			window.history.replaceState({}, '', cleanUrl);
+
+			// Send the initial message
+			await tick();
+			chat.sendMessage({ text: decodeURIComponent(initialMessage) });
+		}
+	});
+
+	// Derive display title
+	const chatTitle = $derived(data.chat?.title || 'Chat');
+</script>
+
+<svelte:head>
+	<title>{chatTitle} — MicroManus</title>
+	<meta name="description" content="AI conversation on MicroManus" />
+</svelte:head>
+
+<div class="flex h-full flex-col">
+	<!-- Header -->
+	<div class="flex items-center gap-2 p-4">
+		<h1 class="truncate text-sm font-medium">{chatTitle}</h1>
+	</div>
+
+	<!-- Messages area -->
+	<div
+		bind:this={messagesContainer}
+		onscroll={handleScroll}
+		class="relative flex-1 overflow-y-auto"
+	>
+		<div class="mx-auto max-w-3xl px-4">
+			{#if chat.messages.length === 0}
+				<div
+					class="flex h-full items-center justify-center py-20 text-center text-muted-foreground"
+				>
+					<p class="text-sm">Send a message to start the conversation.</p>
+				</div>
+			{:else}
+				{#each chat.messages as message (message.id)}
+					{@const textParts = message.parts?.filter((p) => p.type === 'text') ?? []}
+					{@const content = textParts.map((p) => p.text).join('\n')}
+					<MessageBubble
+						role={message.role as 'user' | 'assistant'}
+						{content}
+						modelId={message.role === 'assistant' ? selectedModelId : undefined}
+						userImage={data.user?.image ?? undefined}
+						userName={data.user?.name ?? undefined}
+					/>
+				{/each}
+
+				{#if chat.status === 'streaming' || chat.status === 'submitted'}
+					<div class="flex items-center gap-2 py-4">
+						<div class="flex gap-1">
+							<span class="size-2 animate-bounce rounded-full bg-primary/60 [animation-delay:0ms]"
+							></span>
+							<span class="size-2 animate-bounce rounded-full bg-primary/60 [animation-delay:150ms]"
+							></span>
+							<span class="size-2 animate-bounce rounded-full bg-primary/60 [animation-delay:300ms]"
+							></span>
+						</div>
+						<span class="text-xs text-muted-foreground">Thinking...</span>
+					</div>
+				{/if}
+			{/if}
+		</div>
+
+		<!-- Scroll to bottom button -->
+		{#if showScrollButton}
+			<button
+				onclick={scrollToBottom}
+				class="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-1.5 rounded-full border bg-background px-3 py-1.5 text-xs shadow-md transition-all hover:bg-muted"
+			>
+				<ArrowDownIcon class="size-3" />
+				<span>Scroll to bottom</span>
+			</button>
+		{/if}
+	</div>
+
+	<!-- Input -->
+	<ChatInput
+		{selectedModelId}
+		onModelSelect={handleModelSelect}
+		onSubmit={handleSubmit}
+		isStreaming={chat.status === 'streaming' || chat.status === 'submitted'}
+		onStop={handleStop}
+	/>
+</div>
