@@ -18,7 +18,7 @@
 		if (isExporting) return;
 		isExporting = true;
 
-		toast.info(`Generating ${format.toUpperCase()} export...`);
+		const id = toast.loading(`Generating ${format.toUpperCase()} export...`);
 
 		try {
 			const res = await fetch(`/api/chat/${chatId}/export?format=${format}`);
@@ -37,10 +37,10 @@
 			document.body.removeChild(a);
 			URL.revokeObjectURL(url);
 
-			toast.success(`Exported chat as ${format.toUpperCase()}`);
+			toast.success(`Exported chat as ${format.toUpperCase()}`, { id });
 		} catch (error) {
 			console.error('[Export Error]', error);
-			toast.error('Failed to export chat');
+			toast.error('Failed to export chat', { id });
 		} finally {
 			isExporting = false;
 		}

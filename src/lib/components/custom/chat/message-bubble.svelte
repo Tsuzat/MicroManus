@@ -71,16 +71,11 @@
 	const model = $derived(modelId ? getModelConfig(modelId) : undefined);
 
 	async function copyContent() {
-		try {
-			await navigator.clipboard.writeText(content);
-			copied = true;
-			setTimeout(() => {
-				copied = false;
-			}, 2000);
-			toast.success('Response copied to clipboard');
-		} catch {
-			toast.error('Failed to copy text');
-		}
+		await navigator.clipboard.writeText(content);
+		copied = true;
+		setTimeout(() => {
+			copied = false;
+		}, 2000);
 	}
 
 	async function handleExport(format: 'pdf' | 'md') {
@@ -89,7 +84,7 @@
 			return;
 		}
 
-		toast.info(`Generating ${format.toUpperCase()}...`);
+		const id = toast.loading(`Generating ${format.toUpperCase()}...`);
 		try {
 			const res = await fetch(`/api/message/${messageId}/export?format=${format}`);
 			if (!res.ok) throw new Error('Failed to generate export');
@@ -103,9 +98,9 @@
 			a.click();
 			document.body.removeChild(a);
 			URL.revokeObjectURL(url);
-			toast.success(`Response downloaded as ${format.toUpperCase()}`);
+			toast.success(`Response downloaded as ${format.toUpperCase()}`, { id });
 		} catch {
-			toast.error(`Failed to download ${format.toUpperCase()} file`);
+			toast.error(`Failed to download ${format.toUpperCase()} file`, { id });
 		}
 	}
 
@@ -136,6 +131,17 @@
 		{#if role === 'user'}
 			<div class="rounded-2xl rounded-tr-sm bg-primary px-4 py-2.5 text-sm text-primary-foreground">
 				<p class="whitespace-pre-wrap">{content}</p>
+			</div>
+			<div
+				class="flex items-center justify-end gap-1 pr-1 opacity-0 transition-opacity group-hover:opacity-100"
+			>
+				<Button variant="ghost" size="icon-sm" onclick={copyContent} title="Copy Message">
+					{#if copied}
+						<CheckIcon class="size-3.5 text-emerald-500" />
+					{:else}
+						<CopyIcon class="size-3.5" />
+					{/if}
+				</Button>
 			</div>
 		{:else}
 			{#if reasoning || (toolInvocations && toolInvocations.length > 0)}
