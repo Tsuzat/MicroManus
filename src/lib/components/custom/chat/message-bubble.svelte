@@ -2,6 +2,7 @@
 	import { getModelConfig, type AIProvider } from '$lib/ai/providers';
 	import { OpenAIIcon, GeminiIcon, AnthropicIcon, KimiIcon } from '$lib/components/custom/icons';
 	import { Button } from '$lib/components/ui/button';
+	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { Streamdown } from 'svelte-streamdown';
 	import Code from 'svelte-streamdown/code';
 	import Math from 'svelte-streamdown/math';
@@ -23,6 +24,7 @@
 	let { role, content, modelId, messageId, onRewrite }: Props = $props();
 
 	let copied = $state(false);
+	let proseContainer: HTMLDivElement | undefined = $state();
 
 	const providerIcons: Record<AIProvider, Component> = {
 		openai: OpenAIIcon,
@@ -46,22 +48,24 @@
 		}
 	}
 
-	function downloadContent() {
+	function downloadAsMarkdown() {
 		try {
-			const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+			const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' });
 			const url = URL.createObjectURL(blob);
 			const a = document.createElement('a');
 			a.href = url;
-			a.download = `ai-response-${messageId || 'msg'}.txt`;
+			a.download = `ai-response-${messageId || 'msg'}.md`;
 			document.body.appendChild(a);
 			a.click();
 			document.body.removeChild(a);
 			URL.revokeObjectURL(url);
-			toast.success('Response downloaded as text file');
+			toast.success('Response downloaded as Markdown (.md)');
 		} catch {
-			toast.error('Failed to download text');
+			toast.error('Failed to download Markdown file');
 		}
 	}
+
+	function downloadAsPDF() {}
 </script>
 
 <div class="group flex gap-3 py-4 {role === 'user' ? 'flex-row-reverse' : ''}">
@@ -84,7 +88,7 @@
 				<p class="whitespace-pre-wrap">{content}</p>
 			</div>
 		{:else}
-			<div class="prose prose-sm dark:prose-invert max-w-none text-sm">
+			<div bind:this={proseContainer} class="prose prose-sm dark:prose-invert max-w-none text-sm">
 				<Streamdown class="render-markdown" {content} components={{ code: Code, math: Math }} />
 			</div>
 
@@ -93,7 +97,13 @@
 				class="flex items-center gap-1 pt-1 opacity-0 transition-opacity group-hover:opacity-100"
 			>
 				<!-- Copy Button -->
-				<Button variant="ghost" size="icon-sm" onclick={copyContent} title="Copy Response">
+				<Button
+					variant="ghost"
+					size="icon"
+					class="size-8 text-muted-foreground hover:bg-muted hover:text-foreground"
+					onclick={copyContent}
+					title="Copy Response"
+				>
 					{#if copied}
 						<CheckIcon class="text-emerald-500" />
 					{:else}
@@ -101,16 +111,37 @@
 					{/if}
 				</Button>
 
-				<!-- Download Button -->
-				<Button variant="ghost" size="icon-sm" onclick={downloadContent} title="Download as Text">
-					<DownloadIcon />
-				</Button>
+				<!-- Download Dropdown -->
+				<DropdownMenu.Root>
+					<DropdownMenu.Trigger>
+						{#snippet child({ props })}
+							<Button
+								variant="ghost"
+								size="icon"
+								class="size-8 text-muted-foreground hover:bg-muted hover:text-foreground"
+								{...props}
+								title="Download Options"
+							>
+								<DownloadIcon />
+							</Button>
+						{/snippet}
+					</DropdownMenu.Trigger>
+					<DropdownMenu.Content align="center" class="w-36">
+						<DropdownMenu.Item onclick={downloadAsMarkdown}>
+							<span>Markdown (.md)</span>
+						</DropdownMenu.Item>
+						<DropdownMenu.Item onclick={downloadAsPDF}>
+							<span>PDF (.pdf)</span>
+						</DropdownMenu.Item>
+					</DropdownMenu.Content>
+				</DropdownMenu.Root>
 
 				<!-- Rewrite Button -->
 				{#if messageId && onRewrite}
 					<Button
 						variant="ghost"
-						size="icon-sm"
+						size="icon"
+						class="size-8 text-muted-foreground hover:bg-muted hover:text-foreground"
 						onclick={() => onRewrite(messageId)}
 						title="Regenerate Response"
 					>

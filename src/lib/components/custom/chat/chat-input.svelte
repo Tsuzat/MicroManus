@@ -75,7 +75,7 @@
 	}
 </script>
 
-<div class="mx-auto w-full max-w-3xl px-4 pb-4">
+<div class="mx-auto w-full max-w-3xl bg-transparent px-4 pb-4">
 	<div class="flex flex-col gap-2 rounded-2xl border bg-background p-2 shadow-sm transition-shadow">
 		<textarea
 			bind:this={textareaEl}

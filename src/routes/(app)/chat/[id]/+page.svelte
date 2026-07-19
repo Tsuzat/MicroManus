@@ -98,14 +98,6 @@
 
 	// Auto-scroll when new messages arrive or stream content updates
 	$effect(() => {
-		// Track messages length and the text parts of the last message to trigger on every streaming chunk
-		const messages = chat.messages;
-		const lastMessage = messages[messages.length - 1];
-		const lastMessageContent = lastMessage?.parts
-			?.filter((p) => p.type === 'text')
-			.map((p) => p.text)
-			.join('');
-
 		// Auto-scroll if the user is already near the bottom (within 150px) or if streaming is active
 		if (messagesContainer) {
 			const { scrollTop, scrollHeight, clientHeight } = messagesContainer;
