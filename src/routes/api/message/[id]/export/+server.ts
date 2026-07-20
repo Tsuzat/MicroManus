@@ -5,6 +5,7 @@ import { eq, and } from 'drizzle-orm';
 import { getModelConfig } from '$lib/ai/providers';
 import { chromium } from 'playwright';
 import { renderChatToHTML } from '$lib/server/pdf/renderer';
+import { GOTENBERG_URL } from '$env/static/private';
 
 /** Extract readable text from a message, handling JSON-wrapped content */
 function extractText(raw: string): string {
@@ -107,29 +108,48 @@ export const GET: RequestHandler = async ({ params, locals, url }) => {
 		try {
 			const html = await renderChatToHTML(chatTitle, exportDate, [msg]);
 
-			const browser = await chromium.launch({
-				headless: true,
-				args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu']
+			const formData = new FormData();
+			formData.append(
+				'files',
+				new Blob([html], { type: 'text/html' }),
+				'index.html' // Gotenberg requires this exact filename for the main file
+			);
+
+			// Optional: replicate your margin/footer settings
+			formData.append('marginTop', '0.79'); // inches; 20mm ≈ 0.79in
+			formData.append('marginBottom', '0.79');
+			formData.append('marginLeft', '0');
+			formData.append('marginRight', '0');
+			formData.append('printBackground', 'true');
+			formData.append('preferCssPageSize', 'false');
+
+			// Footer/header must be their own HTML files if you want them
+			formData.append(
+				'footer',
+				new Blob(
+					[
+						`<html><body style="width:100%;font-size:8px;color:#6b7280;padding:0 40px;display:flex;justify-content:space-between;font-family:sans-serif;">
+									<span>Page <span class="pageNumber"></span> of <span class="totalPages"></span></span>
+									<span>MicroManus</span>
+								</body></html>`
+					],
+					{ type: 'text/html' }
+				),
+				'footer.html'
+			);
+
+			const res = await fetch(`${GOTENBERG_URL}/forms/chromium/convert/html`, {
+				method: 'POST',
+				body: formData
 			});
-			const page = await browser.newPage();
 
-			await page.setContent(html, { waitUntil: 'networkidle' });
+			if (!res.ok) {
+				const errText = await res.text();
+				console.error('Gotenberg error:', errText);
+				return new Response('Failed to generate PDF', { status: 502 });
+			}
 
-			const pdfBuffer = await page.pdf({
-				format: 'A4',
-				printBackground: true,
-				margin: { top: '20mm', bottom: '20mm', left: '0mm', right: '0mm' },
-				displayHeaderFooter: true,
-				headerTemplate: '<div></div>',
-				footerTemplate: `
-					<div style="width: 100%; font-size: 8px; color: #6b7280; padding: 0 40px; display: flex; justify-content: space-between; font-family: sans-serif;">
-						<span>Page <span class="pageNumber"></span> of <span class="totalPages"></span></span>
-						<span>MicroManus</span>
-					</div>
-				`
-			});
-
-			await browser.close();
+			const pdfBuffer = await res.arrayBuffer();
 
 			return new Response(pdfBuffer, {
 				headers: {

@@ -6,6 +6,7 @@ import { chatIdParamSchema } from '$lib/schemas/chat';
 import { getModelConfig } from '$lib/ai/providers';
 import { chromium } from 'playwright';
 import { renderChatToHTML } from '$lib/server/pdf/renderer';
+import { GOTENBERG_URL } from '$env/static/private';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -129,42 +130,53 @@ export const GET: RequestHandler = async ({ params, locals, url }) => {
 		try {
 			const html = await renderChatToHTML(chat.title, exportDate, chatMessages);
 
-			// Launch headless chromium
-			const browser = await chromium.launch({
-				headless: true,
-				args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu']
-			});
-			const page = await browser.newPage();
+			const formData = new FormData();
+			formData.append(
+				'files',
+				new Blob([html], { type: 'text/html' }),
+				'index.html' // Gotenberg requires this exact filename for the main file
+			);
 
-			// Load the HTML content
-			await page.setContent(html, { waitUntil: 'networkidle' });
+			// Optional: replicate your margin/footer settings
+			formData.append('marginTop', '0.79'); // inches; 20mm ≈ 0.79in
+			formData.append('marginBottom', '0.79');
+			formData.append('marginLeft', '0');
+			formData.append('marginRight', '0');
+			formData.append('printBackground', 'true');
+			formData.append('preferCssPageSize', 'false');
 
-			// Generate PDF
-			const pdfBuffer = await page.pdf({
-				format: 'A4',
-				printBackground: true,
-				margin: {
-					top: '20mm',
-					bottom: '20mm',
-					left: '0mm',
-					right: '0mm'
-				},
-				displayHeaderFooter: true,
-				headerTemplate: '<div></div>',
-				footerTemplate: `
-					<div style="width: 100%; font-size: 8px; color: #6b7280; padding: 0 40px; display: flex; justify-content: space-between; font-family: sans-serif;">
+			// Footer/header must be their own HTML files if you want them
+			formData.append(
+				'footer',
+				new Blob(
+					[
+						`<html><body style="width:100%;font-size:8px;color:#6b7280;padding:0 40px;display:flex;justify-content:space-between;font-family:sans-serif;">
 						<span>Page <span class="pageNumber"></span> of <span class="totalPages"></span></span>
 						<span>MicroManus</span>
-					</div>
-				`
+					</body></html>`
+					],
+					{ type: 'text/html' }
+				),
+				'footer.html'
+			);
+
+			const res = await fetch(`${GOTENBERG_URL}/forms/chromium/convert/html`, {
+				method: 'POST',
+				body: formData
 			});
 
-			await browser.close();
+			if (!res.ok) {
+				const errText = await res.text();
+				console.error('Gotenberg error:', errText);
+				return new Response('Failed to generate PDF', { status: 502 });
+			}
+
+			const pdfBuffer = await res.arrayBuffer();
 
 			return new Response(pdfBuffer, {
 				headers: {
 					'Content-Type': 'application/pdf',
-					'Content-Disposition': `attachment; filename="${safeTitle}_export.pdf"`
+					'Content-Disposition': `attachment; filename="message_${id}_export.pdf"`
 				}
 			});
 		} catch (error) {
