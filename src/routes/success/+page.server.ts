@@ -1,11 +1,11 @@
 import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { isUserUnlocked, unlockUser } from '$lib/server/unlock';
-import { POLAR_ACCESS_TOKEN } from '$env/static/private';
+import { env } from '$env/dynamic/private';
 import { Polar } from '@polar-sh/sdk';
 
 const polarClient = new Polar({
-	accessToken: POLAR_ACCESS_TOKEN,
+	accessToken: env.POLAR_ACCESS_TOKEN,
 	server: 'production'
 });
 

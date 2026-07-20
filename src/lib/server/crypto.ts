@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import { API_KEY_ENCRYPTION_SECRET } from '$env/static/private';
+import { env } from '$env/dynamic/private';
 
 // AES-256-GCM algorithm configuration
 const ALGORITHM = 'aes-256-gcm';
@@ -7,7 +7,7 @@ const IV_LENGTH = 12;
 
 function getEncryptionKey(): Buffer {
 	// Fall back to BETTER_AUTH_SECRET or a derived safe secret if API_KEY_ENCRYPTION_SECRET is not set
-	const secret = API_KEY_ENCRYPTION_SECRET;
+	const secret = env.API_KEY_ENCRYPTION_SECRET;
 
 	// Derive a stable 32-byte key from the secret
 	return crypto.pbkdf2Sync(secret, 'micromanus-crypto-salt', 100000, 32, 'sha256');

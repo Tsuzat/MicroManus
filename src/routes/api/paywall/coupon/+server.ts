@@ -1,7 +1,7 @@
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { isUserUnlocked, unlockUser } from '$lib/server/unlock';
-import { COUPON_CODE } from '$env/static/private';
 import { couponSchema } from '$lib/schemas/paywall';
+import { env } from '$env/dynamic/private';
 
 export const POST: RequestHandler = async ({ request, locals }) => {
 	if (!locals.user) {
@@ -32,7 +32,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 	}
 
 	const inputCode = parseResult.data.code;
-	const validCode = COUPON_CODE.trim();
+	const validCode = env.COUPON_CODE.trim();
 
 	if (inputCode.toUpperCase() !== validCode.toUpperCase()) {
 		return json({ error: 'Invalid coupon code' }, { status: 400 });

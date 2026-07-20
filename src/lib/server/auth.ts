@@ -7,10 +7,9 @@ import { db } from '$lib/server/db';
 import { redis } from 'bun';
 import { checkout, polar, webhooks } from '@polar-sh/better-auth';
 import { Polar } from '@polar-sh/sdk';
-import { POLAR_ACCESS_TOKEN, POLAR_WEBHOOK_SECRET } from '$env/static/private';
 
 const polarClient = new Polar({
-	accessToken: POLAR_ACCESS_TOKEN,
+	accessToken: env.POLAR_ACCESS_TOKEN,
 	server: 'production'
 });
 
@@ -61,7 +60,7 @@ export const auth = betterAuth({
 					authenticatedUsersOnly: true
 				}),
 				webhooks({
-					secret: POLAR_WEBHOOK_SECRET,
+					secret: env.POLAR_WEBHOOK_SECRET,
 					onOrderPaid: async (payload) => {
 						try {
 							// Extract userId from metadata or order payload if present
