@@ -1,10 +1,28 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
+	import { onMount } from 'svelte';
+	import { toast } from 'svelte-sonner';
 	import { useChatsContext } from '$lib/hooks/chats.svelte';
 	import { DEFAULT_MODEL_ID } from '$lib/ai/providers';
 	import { WelcomeScreen, ChatInput } from '$lib/components/custom/chat';
 
+	const { data } = $props();
 	const chatsContext = useChatsContext();
+
+	onMount(() => {
+		const hasKeys = Object.values(data.keysConfigured || {}).some(Boolean);
+		if (!hasKeys) {
+			toast.warning('No API keys configured', {
+				description: 'Your request will fail. Please set your API keys.',
+				action: {
+					label: 'Settings',
+					onClick: () => goto(resolve('/(app)/settings'))
+				},
+				duration: 8000
+			});
+		}
+	});
 
 	let selectedModelId = $state(
 		(typeof window !== 'undefined' && localStorage.getItem('micromanus:selectedModel')) ||

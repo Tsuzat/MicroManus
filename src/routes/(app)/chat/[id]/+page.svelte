@@ -170,6 +170,18 @@
 
 	// Handle initial message from /chat/new redirect
 	onMount(async () => {
+		const hasKeys = Object.values(data.keysConfigured || {}).some(Boolean);
+		if (!hasKeys) {
+			toast.warning('No API keys configured', {
+				description: 'Your request will fail. Please set your API keys.',
+				action: {
+					label: 'Settings',
+					onClick: () => goto(resolve('/(app)/settings'))
+				},
+				duration: 8000
+			});
+		}
+
 		const url = new URL(window.location.href);
 		const initialMessage = url.searchParams.get('initial');
 		const initialModel = url.searchParams.get('model');
