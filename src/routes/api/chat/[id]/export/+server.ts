@@ -4,7 +4,6 @@ import { chats, messages } from '$lib/server/db/schema';
 import { eq, and, asc } from 'drizzle-orm';
 import { chatIdParamSchema } from '$lib/schemas/chat';
 import { getModelConfig } from '$lib/ai/providers';
-import { chromium } from 'playwright';
 import { renderChatToHTML } from '$lib/server/pdf/renderer';
 import { GOTENBERG_URL } from '$env/static/private';
 

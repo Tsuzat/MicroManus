@@ -36,13 +36,6 @@ COPY package.json bun.lock ./
 # Install production dependencies only (no better-sqlite3 here)
 RUN bun install --frozen-lockfile --production
 
-# Install Playwright Chromium browser binary AND its system dependencies
-# --with-deps ensures all required shared libraries are installed for this specific version
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    fonts-liberation fonts-noto-color-emoji && \
-    bunx playwright install --with-deps chromium && \
-    rm -rf /var/lib/apt/lists/*
-
 # Copy the built SvelteKit app from builder stage
 COPY --from=builder /app/build ./build
 
