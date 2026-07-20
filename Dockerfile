@@ -21,6 +21,7 @@ RUN bun install --frozen-lockfile
 
 # Copy source code and build
 COPY . .
+# Copy example env for build
 RUN cp .env.example .env
 RUN bun --bun run build
 
