@@ -53,7 +53,7 @@ export const auth = betterAuth({
 	plugins: [
 		polar({
 			client: polarClient,
-			createCustomerOnSignUp: true,
+			createCustomerOnSignUp: false,
 			use: [
 				checkout({
 					products: [{ productId: env.POLAR_PRODUCT_ID, slug: 'pro' }],
