@@ -13,20 +13,6 @@ import { messages as messagesTable, chats, usageEvents } from '$lib/server/db/sc
 import { eq, and } from 'drizzle-orm';
 import { getModelConfig } from '$lib/ai/providers';
 import { webSearch } from '$lib/ai/search-tool.server';
-import { redis, password } from 'bun';
-
-// --- Wrap webSearch with a Redis cache layer ---
-const cachedWebSearch = {
-	...webSearch,
-	execute: async (args: any, options: any) => {
-		const key = `search:${password.hash(JSON.stringify(args))}`;
-		const hit = await redis.get(key);
-		if (hit) return JSON.parse(hit as string);
-		const result = await webSearch.execute(args, options);
-		await redis.set(key, JSON.stringify(result), 'EX', 3600);
-		return result;
-	}
-};
 
 export const POST: RequestHandler = async ({ request, locals }) => {
 	if (!locals.user) {
@@ -82,7 +68,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 	// --- Agent with webSearch tool always available ---
 	const agent = new ToolLoopAgent({
 		model: languageModel,
-		tools: { cachedWebSearch },
+		tools: { webSearch },
 		stopWhen: isStepCount(10), // Max 10 loop iterations
 		providerOptions
 	});
@@ -154,25 +140,6 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 					})
 					.returning();
 
-				// 4. Log usage
-				// if (usage) {
-				// 	const inputTokens = usage.inputTokens ?? 0;
-				// 	const outputTokens = usage.outputTokens ?? 0;
-				// 	const inputCost = modelConfig
-				// 		? (inputTokens / 1_000_000) * modelConfig.pricing.inputPerMTok
-				// 		: 0;
-				// 	const outputCost = modelConfig
-				// 		? (outputTokens / 1_000_000) * modelConfig.pricing.outputPerMTok
-				// 		: 0;
-				// 	await db.insert(usageEvents).values({
-				// 		messageId: assistantMsg.id,
-				// 		userId: locals.user!.id,
-				// 		model: modelId,
-				// 		inputTokens,
-				// 		outputTokens,
-				// 		costUsd: (inputCost + outputCost).toFixed(6)
-				// 	});
-				// }
 				// 4. Log usage
 				if (usage) {
 					const inputTokens = usage.inputTokens ?? 0;

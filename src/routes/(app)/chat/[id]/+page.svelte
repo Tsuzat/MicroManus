@@ -242,7 +242,7 @@
 						<p class="text-sm">Send a message to start the conversation.</p>
 					</div>
 				{:else}
-					{#each chat.messages as message, i (message.id)}
+					{#each chat.messages as message (message.id)}
 						{@const textParts = message.parts?.filter((p) => p.type === 'text') ?? []}
 						{@const content =
 							textParts.length > 0 ? textParts.map((p: any) => p.text).join('\n') : message.content}
@@ -350,4 +350,4 @@
 	/>
 </div>
 
-<Search messages={chat.messages} />
+<Search />

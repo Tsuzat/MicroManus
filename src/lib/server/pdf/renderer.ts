@@ -40,11 +40,11 @@ export async function renderChatToHTML(
 
 		let reasoningHtml = '';
 		if (!isUser && msg.reasoning) {
-			const reasoningClean = msg.reasoning;
+			const reasoningClean = await marked.parse(msg.reasoning);
 			reasoningHtml = `
 				<div class="reasoning-block">
 					<div class="reasoning-title">Thinking:</div>
-					<div class="reasoning-content">${reasoningClean}</div>
+					<div class="reasoning-content prose" style="font-size: 12px;">${reasoningClean}</div>
 				</div>
 			`;
 		}
@@ -168,8 +168,6 @@ export async function renderChatToHTML(
 		.reasoning-content {
 			font-size: 12px;
 			color: #4b5563;
-			white-space: pre-wrap;
-			font-family: ui-monospace, monospace;
 		}
 		
 		/* Sources */

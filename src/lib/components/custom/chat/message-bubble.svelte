@@ -58,7 +58,6 @@
 	}: Props = $props();
 
 	let copied = $state(false);
-	let proseContainer: HTMLDivElement | undefined = $state();
 	let showAnalytics = $state(false);
 
 	const allSources = $derived.by(() => {
@@ -164,11 +163,7 @@
 					<ChainOfThought.Content>
 						{#if reasoning}
 							<ChainOfThought.Step icon={LightbulbIcon} label="Thinking..." status="active">
-								<div
-									class="px-1 py-2 font-mono text-xs leading-relaxed whitespace-pre-wrap text-muted-foreground"
-								>
-									{reasoning}
-								</div>
+								<Streamdown baseTheme="shadcn" content={reasoning} />
 							</ChainOfThought.Step>
 						{/if}
 						{#if toolInvocations}
@@ -209,9 +204,17 @@
 				</ChainOfThought.Root>
 			{/if}
 
-			<div bind:this={proseContainer} class="prose prose-sm dark:prose-invert max-w-none text-sm">
-				<Streamdown class="render-markdown" {content} components={{ code: Code, math: Math }} />
-			</div>
+			<Streamdown
+				{content}
+				baseTheme="shadcn"
+				theme={{
+					code: {
+						container: 'dark:bg-muted/20',
+						pre: 'bg-transparent!'
+					}
+				}}
+				components={{ code: Code, math: Math }}
+			/>
 
 			{#if !isStreaming}
 				{#if allSources && allSources.length > 0}
@@ -308,7 +311,7 @@
 								<img
 									src={attachment.url}
 									alt={attachment.filename || 'Image Attachment'}
-									class="max-h-48 max-w-[240px] rounded-lg object-contain"
+									class="max-h-48 max-w-60 rounded-lg object-contain"
 								/>
 							</a>
 						</div>
@@ -317,7 +320,7 @@
 							href={attachment.url}
 							rel="external"
 							download={attachment.filename || 'file'}
-							class="flex max-w-[240px] min-w-[120px] items-center gap-2 rounded-lg border bg-muted/40 px-3 py-2 text-xs text-foreground transition-colors hover:bg-muted"
+							class="flex max-w-60 min-w-30 items-center gap-2 rounded-lg border bg-muted/40 px-3 py-2 text-xs text-foreground transition-colors hover:bg-muted"
 							title="Download attachment"
 						>
 							<FileIcon class="size-4 shrink-0 text-muted-foreground" />
