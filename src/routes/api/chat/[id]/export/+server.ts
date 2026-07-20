@@ -132,7 +132,7 @@ export const GET: RequestHandler = async ({ params, locals, url }) => {
 			// Launch headless chromium
 			const browser = await chromium.launch({
 				headless: true,
-				args: ['--no-sandbox', '--disable-setuid-sandbox']
+				args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu']
 			});
 			const page = await browser.newPage();
 

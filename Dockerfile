@@ -30,22 +30,18 @@ FROM oven/bun:1-debian AS production
 
 WORKDIR /app
 
-# Playwright Chromium system dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 \
-    libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 \
-    libpango-1.0-0 libcairo2 libasound2 libxshmfence1 libx11-xcb1 \
-    fonts-liberation fonts-noto-color-emoji \
-    && rm -rf /var/lib/apt/lists/*
-
 # Copy dependency manifests
 COPY package.json bun.lock ./
 
 # Install production dependencies only (no better-sqlite3 here)
 RUN bun install --frozen-lockfile --production
 
-# Install Playwright Chromium browser binary
-RUN bunx playwright install chromium
+# Install Playwright Chromium browser binary AND its system dependencies
+# --with-deps ensures all required shared libraries are installed for this specific version
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    fonts-liberation fonts-noto-color-emoji && \
+    bunx playwright install --with-deps chromium && \
+    rm -rf /var/lib/apt/lists/*
 
 # Copy the built SvelteKit app from builder stage
 COPY --from=builder /app/build ./build
